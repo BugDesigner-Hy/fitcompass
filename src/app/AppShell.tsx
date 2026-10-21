@@ -1,4 +1,20 @@
+import { useState } from 'react'
+import {
+  BodyMap,
+  type BodyMapMode,
+  type BodyView,
+} from '../features/body-map/BodyMap'
+
 export function AppShell() {
+  const [mode, setMode] = useState<BodyMapMode>('muscles')
+  const [view, setView] = useState<BodyView>('front')
+  const [selectedEntityId, setSelectedEntityId] = useState<string>()
+
+  const changeMode = (nextMode: BodyMapMode) => {
+    setMode(nextMode)
+    setSelectedEntityId(undefined)
+  }
+
   return (
     <div className="app-shell">
       <header className="top-bar">
@@ -23,11 +39,23 @@ export function AppShell() {
         <fieldset className="mode-control">
           <legend className="sr-only">解剖浏览模式</legend>
           <label>
-            <input defaultChecked name="mode" type="radio" value="muscle" />
+            <input
+              checked={mode === 'muscles'}
+              name="mode"
+              onChange={() => changeMode('muscles')}
+              type="radio"
+              value="muscles"
+            />
             <span>肌肉</span>
           </label>
           <label>
-            <input name="mode" type="radio" value="bone" />
+            <input
+              checked={mode === 'bones'}
+              name="mode"
+              onChange={() => changeMode('bones')}
+              type="radio"
+              value="bones"
+            />
             <span>骨骼</span>
           </label>
         </fieldset>
@@ -35,11 +63,17 @@ export function AppShell() {
 
       <main className="anatomy-layout" aria-label="人体解剖浏览器">
         <section className="body-map" aria-labelledby="body-map-title">
-          <div>
+          <header className="body-map__heading">
             <p className="eyebrow">交互式人体图谱</p>
             <h1 id="body-map-title">探索身体结构</h1>
-            <p>人体 SVG 图谱将在这里呈现。</p>
-          </div>
+          </header>
+          <BodyMap
+            mode={mode}
+            onEntitySelect={setSelectedEntityId}
+            onViewChange={setView}
+            selectedEntityId={selectedEntityId}
+            view={view}
+          />
         </section>
 
         <section className="details-panel" aria-labelledby="details-title">

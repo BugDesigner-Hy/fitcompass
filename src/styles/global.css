@@ -141,11 +141,8 @@ a {
 }
 
 .body-map {
-  display: grid;
   min-height: 34rem;
-  place-items: center;
   padding: var(--space-8);
-  text-align: center;
 }
 
 .body-map h1 {
@@ -154,10 +151,14 @@ a {
   line-height: var(--line-height-tight);
 }
 
-.body-map p:last-child,
 .details-panel p:last-child,
 .content-page p {
   color: var(--color-text-muted);
+}
+
+.body-map__heading {
+  margin-bottom: var(--space-6);
+  text-align: center;
 }
 
 .details-panel {
