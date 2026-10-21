@@ -2,6 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { AppShell } from '../../app/AppShell'
+import { MemoryRouter } from 'react-router-dom'
 import { bones } from '../../data/bones'
 import { muscles } from '../../data/muscles'
 import { BodyMap, type BodyMapProps } from './BodyMap'
@@ -307,7 +308,11 @@ describe('BodyMap', () => {
 describe('AppShell body map integration', () => {
   it('changes the rendered body-map layer with the anatomy mode control', async () => {
     const user = userEvent.setup()
-    render(<AppShell />)
+    render(
+      <MemoryRouter>
+        <AppShell />
+      </MemoryRouter>,
+    )
 
     expect(screen.getByRole('button', { name: '胸大肌' })).toBeInTheDocument()
 

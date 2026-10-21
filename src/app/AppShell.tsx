@@ -1,19 +1,22 @@
-import { useState } from 'react'
-import {
-  BodyMap,
-  type BodyMapMode,
-  type BodyView,
-} from '../features/body-map/BodyMap'
+import { BodyMap } from '../features/body-map/BodyMap'
+import { DetailsPanel } from '../features/details/DetailsPanel'
+import { ExplorerSearch } from '../features/explorer/ExplorerSearch'
+import { useExplorerState } from '../features/explorer/explorerState'
 
 export function AppShell() {
-  const [mode, setMode] = useState<BodyMapMode>('muscles')
-  const [view, setView] = useState<BodyView>('front')
-  const [selectedEntityId, setSelectedEntityId] = useState<string>()
-
-  const changeMode = (nextMode: BodyMapMode) => {
-    setMode(nextMode)
-    setSelectedEntityId(undefined)
-  }
+  const {
+    mode,
+    view,
+    selection,
+    highlightedMuscles,
+    setMode,
+    setView,
+    select,
+  } = useExplorerState()
+  const selectedEntityId =
+    selection?.type === (mode === 'muscles' ? 'muscle' : 'bone')
+      ? selection.id
+      : undefined
 
   return (
     <div className="app-shell">
@@ -25,16 +28,7 @@ export function AppShell() {
           肌动指南
         </a>
 
-        <div className="search" role="search">
-          <label className="sr-only" htmlFor="anatomy-search">
-            搜索肌肉、骨骼或训练动作
-          </label>
-          <input
-            id="anatomy-search"
-            type="search"
-            placeholder="搜索肌肉、骨骼或训练动作"
-          />
-        </div>
+        <ExplorerSearch onSelect={select} />
 
         <fieldset className="mode-control">
           <legend className="sr-only">解剖浏览模式</legend>
@@ -42,7 +36,7 @@ export function AppShell() {
             <input
               checked={mode === 'muscles'}
               name="mode"
-              onChange={() => changeMode('muscles')}
+              onChange={() => setMode('muscles')}
               type="radio"
               value="muscles"
             />
@@ -52,7 +46,7 @@ export function AppShell() {
             <input
               checked={mode === 'bones'}
               name="mode"
-              onChange={() => changeMode('bones')}
+              onChange={() => setMode('bones')}
               type="radio"
               value="bones"
             />
@@ -68,19 +62,18 @@ export function AppShell() {
             <h1 id="body-map-title">探索身体结构</h1>
           </header>
           <BodyMap
+            highlightedMuscles={highlightedMuscles}
             mode={mode}
-            onEntitySelect={setSelectedEntityId}
+            onEntitySelect={(id) =>
+              select({ type: mode === 'muscles' ? 'muscle' : 'bone', id })
+            }
             onViewChange={setView}
             selectedEntityId={selectedEntityId}
             view={view}
           />
         </section>
 
-        <section className="details-panel" aria-labelledby="details-title">
-          <p className="eyebrow">结构详情</p>
-          <h2 id="details-title">解剖详情</h2>
-          <p>选择人体图谱中的结构以查看相关信息。</p>
-        </section>
+        <DetailsPanel onSelect={select} selection={selection} />
       </main>
     </div>
   )

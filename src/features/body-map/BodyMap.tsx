@@ -168,7 +168,7 @@ export function BodyMap({
                 'body-map__entity',
                 `body-map__entity--${mode}`,
                 selected && 'body-map__entity--selected',
-                role && `body-map__entity--${role}`,
+                role && `body-map__entity--${role} role--${role}`,
               ]
                 .filter(Boolean)
                 .join(' ')

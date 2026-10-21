@@ -20,6 +20,8 @@ const actionRelations: Array<[string, string, MuscleRole]> = [
   ['brachialis', 'elbow-flexion', 'agonist'],
   ['brachioradialis', 'elbow-flexion', 'synergist'],
   ['triceps-brachii', 'elbow-extension', 'agonist'],
+  ['biceps-brachii', 'elbow-extension', 'antagonist'],
+  ['brachialis', 'elbow-extension', 'antagonist'],
   ['rectus-abdominis', 'trunk-flexion', 'agonist'],
   ['external-oblique', 'trunk-flexion', 'synergist'],
   ['internal-oblique', 'trunk-flexion', 'synergist'],

@@ -17,8 +17,8 @@ describe('App', () => {
 
     expect(screen.getByText('肌动指南')).toBeInTheDocument()
     expect(
-      screen.getByRole('searchbox', {
-        name: '搜索肌肉、骨骼或训练动作',
+      screen.getByRole('combobox', {
+        name: '搜索肌肉、骨骼、关节动作或训练动作',
       }),
     ).toBeInTheDocument()
     expect(screen.getByRole('radio', { name: '肌肉' })).toBeInTheDocument()
