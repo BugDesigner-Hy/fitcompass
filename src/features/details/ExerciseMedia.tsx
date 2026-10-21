@@ -1,4 +1,29 @@
+import { useEffect, useState } from 'react'
 import type { ExerciseMotionMedia } from '../../data/exerciseMedia'
+
+function getPrefersReducedMotion() {
+  return (
+    typeof window !== 'undefined' &&
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  )
+}
+
+function usePrefersReducedMotion() {
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(
+    getPrefersReducedMotion,
+  )
+
+  useEffect(() => {
+    if (typeof window.matchMedia !== 'function') return
+    const query = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const update = () => setPrefersReducedMotion(query.matches)
+    query.addEventListener?.('change', update)
+    return () => query.removeEventListener?.('change', update)
+  }, [])
+
+  return prefersReducedMotion
+}
 
 export function ExerciseMedia({
   exerciseName,
@@ -9,6 +34,8 @@ export function ExerciseMedia({
   media: ExerciseMotionMedia | null
   compact?: boolean
 }) {
+  const prefersReducedMotion = usePrefersReducedMotion()
+
   if (!media) {
     return (
       <div
@@ -27,7 +54,8 @@ export function ExerciseMedia({
     >
       <video
         aria-label={`${exerciseName}动作演示`}
-        autoPlay
+        autoPlay={!prefersReducedMotion}
+        controls={prefersReducedMotion}
         loop
         muted
         playsInline

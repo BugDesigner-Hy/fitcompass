@@ -147,6 +147,50 @@ describe('AppShell local search', () => {
     await user.keyboard('{Escape}')
     expect(screen.queryByRole('listbox')).not.toBeInTheDocument()
   })
+
+  it('applies body-region filters only to muscle results', async () => {
+    const user = userEvent.setup()
+    renderExplorer()
+
+    await user.selectOptions(
+      screen.getByRole('combobox', { name: '身体区域筛选' }),
+      'chest',
+    )
+    await user.type(
+      screen.getByRole('combobox', {
+        name: '搜索肌肉、骨骼、关节动作或训练动作',
+      }),
+      'shoulder-flexion',
+    )
+
+    expect(
+      within(screen.getByRole('listbox')).getByRole('option', {
+        name: /肩屈.*关节动作/,
+      }),
+    ).toBeInTheDocument()
+  })
+
+  it('applies equipment filters only to exercise results', async () => {
+    const user = userEvent.setup()
+    renderExplorer()
+
+    await user.selectOptions(
+      screen.getByRole('combobox', { name: '器械筛选' }),
+      'barbell',
+    )
+    await user.type(
+      screen.getByRole('combobox', {
+        name: '搜索肌肉、骨骼、关节动作或训练动作',
+      }),
+      'pectoralis-major',
+    )
+
+    expect(
+      within(screen.getByRole('listbox')).getByRole('option', {
+        name: /胸大肌.*肌肉/,
+      }),
+    ).toBeInTheDocument()
+  })
 })
 
 describe('AppShell details and relationship highlighting', () => {

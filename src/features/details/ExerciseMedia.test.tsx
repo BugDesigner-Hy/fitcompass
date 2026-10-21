@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { ExerciseMotionMedia } from '../../data/exerciseMedia'
 import { ExerciseMedia } from './ExerciseMedia'
 
@@ -12,6 +12,10 @@ const licensedVideo = {
   licenseUrl: 'https://creativecommons.org/licenses/by-sa/4.0/',
   sourceUrl: 'https://wger.de/api/v2/video/23/',
 } satisfies ExerciseMotionMedia
+
+afterEach(() => {
+  vi.unstubAllGlobals()
+})
 
 describe('ExerciseMedia', () => {
   it('renders licensed motion media as a muted looping inline video', () => {
@@ -59,6 +63,26 @@ describe('ExerciseMedia', () => {
       'href',
       licensedVideo.sourceUrl,
     )
+  })
+
+  it('does not autoplay when the user prefers reduced motion', () => {
+    vi.stubGlobal(
+      'matchMedia',
+      vi.fn().mockReturnValue({
+        matches: true,
+        media: '(prefers-reduced-motion: reduce)',
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+      }),
+    )
+
+    const { container } = render(
+      <ExerciseMedia exerciseName="杠铃卧推" media={licensedVideo} />,
+    )
+    const video = container.querySelector('video')
+
+    expect(video).not.toHaveAttribute('autoplay')
+    expect(video).toHaveAttribute('controls')
   })
 
   it('uses an honest fallback and never renders a stick-figure SVG', () => {

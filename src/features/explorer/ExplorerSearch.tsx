@@ -99,11 +99,17 @@ export function ExplorerSearch({
       const matchesText = [item.nameZh, item.nameEn, item.id].some((value) =>
         value.toLocaleLowerCase().includes(normalized),
       )
+      const matchesRegion =
+        region === 'all' || item.type !== 'muscle' || item.region === region
+      const matchesEquipment =
+        equipment === 'all' ||
+        item.type !== 'exercise' ||
+        item.equipment === equipment
       return (
         matchesText &&
         (type === 'all' || item.type === type) &&
-        (region === 'all' || item.region === region) &&
-        (equipment === 'all' || item.equipment === equipment)
+        matchesRegion &&
+        matchesEquipment
       )
     })
   }, [equipment, query, region, type])
