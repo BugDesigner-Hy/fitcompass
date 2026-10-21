@@ -16,8 +16,9 @@ export function DetailsPanel({
   return (
     <section
       aria-label="解剖详情"
-      className="details-panel"
+      className="details-panel details-panel--desktop-sticky"
       data-drawer-state={drawerState}
+      data-mobile-default="collapsed"
     >
       <div
         className="details-panel__drawer-controls"

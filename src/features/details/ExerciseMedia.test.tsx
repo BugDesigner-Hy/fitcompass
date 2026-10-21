@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { ExerciseMotionMedia } from '../../data/exerciseMedia'
 import { ExerciseMedia } from './ExerciseMedia'
@@ -83,6 +83,56 @@ describe('ExerciseMedia', () => {
 
     expect(video).not.toHaveAttribute('autoplay')
     expect(video).toHaveAttribute('controls')
+  })
+
+  it('updates playback policy when reduced-motion preference changes', () => {
+    let matches = false
+    const listeners = new Set<() => void>()
+    vi.stubGlobal(
+      'matchMedia',
+      vi.fn().mockReturnValue({
+        get matches() {
+          return matches
+        },
+        media: '(prefers-reduced-motion: reduce)',
+        addEventListener: (_event: string, listener: () => void) =>
+          listeners.add(listener),
+        removeEventListener: (_event: string, listener: () => void) =>
+          listeners.delete(listener),
+      }),
+    )
+
+    const { container } = render(
+      <ExerciseMedia exerciseName="杠铃卧推" media={licensedVideo} />,
+    )
+    const getVideo = () => container.querySelector('video')
+    expect(getVideo()).toHaveAttribute('autoplay')
+
+    act(() => {
+      matches = true
+      listeners.forEach((listener) => listener())
+    })
+    expect(getVideo()).not.toHaveAttribute('autoplay')
+    expect(getVideo()).toHaveAttribute('controls')
+
+    act(() => {
+      matches = false
+      listeners.forEach((listener) => listener())
+    })
+    expect(getVideo()).toHaveAttribute('autoplay')
+    expect(getVideo()).not.toHaveAttribute('controls')
+  })
+
+  it('removes a broken video and exposes a stable accessible fallback', () => {
+    const { container } = render(
+      <ExerciseMedia exerciseName="杠铃卧推" media={licensedVideo} />,
+    )
+
+    fireEvent.error(container.querySelector('video') as HTMLVideoElement)
+
+    expect(container.querySelector('video')).not.toBeInTheDocument()
+    expect(screen.getByText('动作视频加载失败')).toBeInTheDocument()
+    expect(screen.getByLabelText('杠铃卧推动作演示')).toBeInTheDocument()
   })
 
   it('uses an honest fallback and never renders a stick-figure SVG', () => {

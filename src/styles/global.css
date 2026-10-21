@@ -281,12 +281,15 @@ a {
 }
 
 .details-panel {
-  position: sticky;
-  top: var(--space-4);
   align-self: start;
   max-height: calc(100vh - var(--space-8));
   padding: var(--space-8);
   overflow: hidden;
+}
+
+.details-panel--desktop-sticky {
+  position: sticky;
+  top: var(--space-4);
 }
 
 .details-panel h2 {

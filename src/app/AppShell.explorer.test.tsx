@@ -83,6 +83,64 @@ describe('AppShell explorer URL state', () => {
       screen.getByRole('heading', { name: '肩屈', level: 2 }),
     ).toBeInTheDocument()
   })
+
+  it('restores mode, view, selection, details, and highlights across history', async () => {
+    const user = userEvent.setup()
+    renderExplorer('/?mode=bones&view=back&type=bone&id=scapula')
+    const address = screen.getByRole('status', { name: '当前地址' })
+
+    await user.click(screen.getByRole('radio', { name: '肌肉' }))
+    expect(address).toHaveTextContent('mode=muscles')
+    expect(address).toHaveTextContent('view=back')
+    expect(
+      screen.getByRole('heading', { name: '开始探索', level: 2 }),
+    ).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: '肩屈' }))
+    expect(address).toHaveTextContent('mode=muscles')
+    expect(address).toHaveTextContent('view=front')
+    expect(address).toHaveTextContent('type=joint-action')
+    expect(
+      screen.getByRole('heading', { name: '肩屈', level: 2 }),
+    ).toBeInTheDocument()
+    expect(
+      document.querySelectorAll('[data-highlight-role]').length,
+    ).toBeGreaterThan(1)
+
+    await user.click(screen.getByRole('button', { name: '返回' }))
+    expect(screen.getByRole('radio', { name: '肌肉' })).toBeChecked()
+    expect(screen.getByRole('button', { name: '背面' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    expect(
+      screen.getByRole('heading', { name: '开始探索', level: 2 }),
+    ).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: '返回' }))
+    expect(screen.getByRole('radio', { name: '骨骼' })).toBeChecked()
+    expect(screen.getByRole('button', { name: '背面' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    expect(
+      screen.getByRole('heading', { name: '肩胛骨', level: 2 }),
+    ).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: '前进' }))
+    await user.click(screen.getByRole('button', { name: '前进' }))
+    expect(screen.getByRole('radio', { name: '肌肉' })).toBeChecked()
+    expect(screen.getByRole('button', { name: '正面' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    expect(
+      screen.getByRole('heading', { name: '肩屈', level: 2 }),
+    ).toBeInTheDocument()
+    expect(
+      document.querySelectorAll('[data-highlight-role]').length,
+    ).toBeGreaterThan(1)
+  })
 })
 
 describe('AppShell local search', () => {
@@ -295,5 +353,30 @@ describe('AppShell details and relationship highlighting', () => {
       'collapsed',
     )
     expect(screen.getByRole('button', { name: '查看详情' })).toBeInTheDocument()
+  })
+
+  it('keeps the body map operable while the mobile drawer is collapsed', async () => {
+    const user = userEvent.setup()
+    renderExplorer()
+    const panel = screen.getByRole('region', { name: '解剖详情' })
+    const pectoralis = screen.getByRole('button', { name: '胸大肌' })
+
+    expect(panel).toHaveAttribute('data-mobile-default', 'collapsed')
+    expect(panel).toHaveAttribute('data-drawer-state', 'collapsed')
+    pectoralis.focus()
+    await user.keyboard('{Enter}')
+
+    expect(panel).toHaveAttribute('data-drawer-state', 'collapsed')
+    expect(
+      within(panel).getByRole('heading', { name: '胸大肌', level: 2 }),
+    ).toBeInTheDocument()
+  })
+
+  it('retains the desktop sticky-panel layout contract', () => {
+    renderExplorer()
+
+    expect(screen.getByRole('region', { name: '解剖详情' })).toHaveClass(
+      'details-panel--desktop-sticky',
+    )
   })
 })

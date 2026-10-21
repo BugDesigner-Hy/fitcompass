@@ -131,6 +131,9 @@ export function ExplorerSearch({
       event.preventDefault()
       setOpen(true)
       setActiveIndex((current) => {
+        if (current === -1) {
+          return event.key === 'ArrowDown' ? 0 : results.length - 1
+        }
         const delta = event.key === 'ArrowDown' ? 1 : -1
         return (current + delta + results.length) % results.length
       })

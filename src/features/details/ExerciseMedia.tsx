@@ -35,14 +35,18 @@ export function ExerciseMedia({
   compact?: boolean
 }) {
   const prefersReducedMotion = usePrefersReducedMotion()
+  const [failedSrc, setFailedSrc] = useState<string | null>(null)
+  const mediaFailed = Boolean(media && failedSrc === media.src)
 
-  if (!media) {
+  if (!media || mediaFailed) {
     return (
       <div
+        aria-label={`${exerciseName}动作演示`}
         className="exercise-media exercise-media--fallback"
         data-testid="exercise-media-fallback"
+        role="img"
       >
-        <strong>暂无授权动图</strong>
+        <strong>{mediaFailed ? '动作视频加载失败' : '暂无授权动图'}</strong>
         {!compact && <span>动作步骤仍可在下方查看</span>}
       </div>
     )
@@ -58,6 +62,7 @@ export function ExerciseMedia({
         controls={prefersReducedMotion}
         loop
         muted
+        onError={() => setFailedSrc(media.src)}
         playsInline
         preload={compact ? 'metadata' : 'auto'}
       >
