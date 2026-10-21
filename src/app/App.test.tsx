@@ -15,7 +15,9 @@ describe('App', () => {
   it('renders the product name, search, and anatomy modes', () => {
     renderRoute()
 
-    expect(screen.getByText('肌动指南')).toBeInTheDocument()
+    expect(screen.getByText('健身指北')).toBeInTheDocument()
+    expect(screen.getByText('肌肉、关节与训练动作图谱')).toBeInTheDocument()
+    expect(screen.getByText('FitCompass')).toBeInTheDocument()
     expect(
       screen.getByRole('combobox', {
         name: '搜索肌肉、骨骼、关节动作或训练动作',
@@ -35,7 +37,7 @@ describe('App', () => {
   })
 
   it.each([
-    ['/about', '关于肌动指南'],
+    ['/about', '关于健身指北'],
     ['/licenses', '开源许可'],
   ])('renders the %s route heading', (route, heading) => {
     renderRoute(route)

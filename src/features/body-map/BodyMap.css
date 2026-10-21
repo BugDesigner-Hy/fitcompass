@@ -63,10 +63,28 @@
   max-height: 65vh;
 }
 
-.body-map__silhouette {
-  fill: color-mix(in srgb, var(--color-border) 42%, transparent);
-  stroke: var(--color-border);
-  stroke-width: 2;
+.body-map__anatomy-base {
+  fill: #fffdf9;
+  stroke: #31383d;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.body-map__anatomy-contour {
+  fill: none;
+  stroke: #4f585d;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.2;
+}
+
+.body-map__anatomy-fiber {
+  fill: none;
+  opacity: 0.58;
+  stroke: #697278;
+  stroke-linecap: round;
+  stroke-width: 0.8;
 }
 
 .body-map__interaction-surface {
@@ -84,9 +102,46 @@
 }
 
 .body-map__entity--muscles {
-  fill: var(--color-muscle);
-  stroke: color-mix(in srgb, var(--color-muscle) 70%, var(--color-text));
-  stroke-width: 2;
+  fill: var(--region-color, var(--color-muscle));
+  fill-opacity: 0.68;
+  stroke: color-mix(
+    in srgb,
+    var(--region-color, var(--color-muscle)) 68%,
+    var(--color-text)
+  );
+  stroke-width: 1.4;
+}
+
+.body-map__entity--tone-coral {
+  --region-color: #d76c68;
+}
+
+.body-map__entity--tone-teal {
+  --region-color: #54aeb1;
+}
+
+.body-map__entity--tone-amber {
+  --region-color: #e1a85d;
+}
+
+.body-map__entity--tone-rose {
+  --region-color: #d8899b;
+}
+
+.body-map__entity--tone-aqua {
+  --region-color: #72c6bd;
+}
+
+.body-map__entity--tone-blue {
+  --region-color: #6f9fc8;
+}
+
+.body-map__entity--tone-sand {
+  --region-color: #d7b57d;
+}
+
+.body-map__entity--tone-violet {
+  --region-color: #9b83bf;
 }
 
 .body-map__entity--bones {
@@ -113,6 +168,7 @@
 
 .body-map__entity--selected {
   fill: var(--color-muscle-selected);
+  fill-opacity: 0.86;
   stroke: var(--color-text);
   stroke-width: 4;
 }
@@ -144,6 +200,49 @@
   opacity: 0.52;
   stroke-dasharray: 14 6 3 6;
   stroke-width: 4;
+}
+
+.body-map__labels {
+  pointer-events: none;
+}
+
+.body-map__label path {
+  fill: none;
+  opacity: 0.72;
+  stroke: var(--color-text);
+  stroke-width: 0.8;
+}
+
+.body-map__label text {
+  paint-order: stroke;
+  fill: var(--color-text);
+  stroke: color-mix(in srgb, var(--color-background) 92%, transparent);
+  stroke-linejoin: round;
+  stroke-width: 2.5;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.body-map__label--internal text {
+  font-size: 9.5px;
+}
+
+.body-map__label--secondary text {
+  font-size: 8px;
+  font-weight: 600;
+}
+
+.body-map__label[data-selected='true'] text {
+  fill: var(--color-muscle-selected);
+  stroke-width: 3.5;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.body-map__label[data-selected='true'] path {
+  opacity: 1;
+  stroke: var(--color-muscle-selected);
+  stroke-width: 1.8;
 }
 
 .body-map__legend {
@@ -214,6 +313,14 @@
   .body-map__canvas,
   .body-map__svg {
     max-height: 58vh;
+  }
+
+  .body-map__label--secondary:not([data-selected='true']) {
+    display: none;
+  }
+
+  .body-map__label text {
+    font-size: 8.5px;
   }
 }
 

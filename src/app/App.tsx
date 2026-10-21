@@ -24,8 +24,8 @@ export function App() {
       <Route
         path="/about"
         element={
-          <PlaceholderPage title="关于肌动指南">
-            肌动指南帮助你了解运动中的人体解剖结构。
+          <PlaceholderPage title="关于健身指北">
+            健身指北帮助你了解肌肉、关节与训练动作之间的联系。
           </PlaceholderPage>
         }
       />

@@ -21,12 +21,18 @@ export function AppShell() {
   return (
     <div className="app-shell">
       <header className="top-bar">
-        <a className="brand" href="/" aria-label="肌动指南首页">
-          <span className="brand-mark" aria-hidden="true">
-            动
-          </span>
-          肌动指南
-        </a>
+        <div className="brand-lockup">
+          <a className="brand" href="/" aria-label="健身指北首页">
+            <span className="brand-mark" aria-hidden="true">
+              北
+            </span>
+            <span className="brand-copy">
+              <strong>健身指北</strong>
+              <small>FitCompass</small>
+            </span>
+          </a>
+          <p className="brand-subtitle">肌肉、关节与训练动作图谱</p>
+        </div>
 
         <ExplorerSearch onSelect={select} />
 

@@ -83,6 +83,80 @@ describe('BodyMap', () => {
     })
   })
 
+  it('renders an original medical line-art figure instead of a geometric silhouette', () => {
+    const { container } = render(<BodyMap {...baseProps} />)
+    const svg = container.querySelector('.body-map__svg')
+    const lineArt = screen.getByTestId('anatomy-line-art')
+
+    expect(svg).toHaveAttribute('data-visual-style', 'medical-line-art')
+    expect(lineArt).toHaveAttribute('data-proportion-system', 'shared')
+    expect(
+      lineArt.querySelectorAll('.body-map__anatomy-contour').length,
+    ).toBeGreaterThanOrEqual(12)
+    expect(
+      lineArt.querySelectorAll('.body-map__anatomy-fiber').length,
+    ).toBeGreaterThanOrEqual(16)
+    expect(
+      container.querySelector('.body-map__silhouette'),
+    ).not.toBeInTheDocument()
+  })
+
+  it('uses anatomical paths for every visible muscle region', () => {
+    const { container } = render(<BodyMap {...baseProps} />)
+    const muscleEntities = container.querySelectorAll(
+      '.body-map__entity--muscles',
+    )
+
+    expect(muscleEntities.length).toBeGreaterThan(0)
+    muscleEntities.forEach((entity) => {
+      expect(
+        entity.querySelectorAll('path[data-anatomy-region]').length,
+      ).toBeGreaterThan(0)
+      expect(entity.querySelector('rect, ellipse')).not.toBeInTheDocument()
+    })
+  })
+
+  it('shows Chinese muscle names without placing exercise names on the figure', () => {
+    render(<BodyMap {...baseProps} />)
+
+    expect(screen.getByText('胸大肌')).toBeInTheDocument()
+    expect(screen.getByText('腹直肌')).toBeInTheDocument()
+    expect(screen.queryByText(/卧推|飞鸟|俯卧撑/)).not.toBeInTheDocument()
+    expect(
+      document.querySelectorAll(
+        '.body-map__label--internal, .body-map__label--callout',
+      ).length,
+    ).toBeGreaterThan(0)
+  })
+
+  it('provides a Chinese label for every visible muscle on both views', () => {
+    const { container, rerender } = render(<BodyMap {...baseProps} />)
+
+    const expectEveryEntityLabelled = () => {
+      const entityIds = Array.from(
+        container.querySelectorAll('.body-map__entity--muscles'),
+      ).map((entity) => entity.getAttribute('data-entity-id'))
+      const labels = container.querySelectorAll('.body-map__label')
+
+      expect(labels).toHaveLength(entityIds.length)
+      expect(
+        Array.from(labels).every((label) => label.textContent?.trim()),
+      ).toBe(true)
+    }
+
+    expectEveryEntityLabelled()
+    rerender(<BodyMap {...baseProps} view="back" />)
+    expectEveryEntityLabelled()
+  })
+
+  it('keeps the selected muscle name visible for mobile label prioritisation', () => {
+    render(<BodyMap {...baseProps} selectedEntityId="pectoralis-major" />)
+
+    expect(
+      screen.getByText('胸大肌').closest('.body-map__label'),
+    ).toHaveAttribute('data-selected', 'true')
+  })
+
   it.each([301, 120])(
     'keeps a fixed practical hit radius when rendered at %ipx wide',
     (width) => {

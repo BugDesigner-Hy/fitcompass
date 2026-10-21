@@ -7,6 +7,7 @@ import {
   FigureBackdrop,
   getEntityAnchors,
   getRegions,
+  muscleLabelLayouts,
 } from './bodyMapGeometry'
 import './BodyMap.css'
 
@@ -36,6 +37,18 @@ const roleLabels: Record<MuscleRole, string> = {
 
 const POINTER_HIT_RADIUS_PX = 22
 
+const muscleToneByRegion = {
+  chest: 'coral',
+  back: 'teal',
+  shoulders: 'amber',
+  arms: 'rose',
+  core: 'aqua',
+  hips: 'blue',
+  thighs: 'sand',
+  'lower-legs': 'violet',
+  trunk: 'aqua',
+} as const
+
 export function BodyMap({
   mode,
   view,
@@ -50,6 +63,9 @@ export function BodyMap({
   const entities = mode === 'muscles' ? muscles : bones
   const regions = getRegions(mode, view)
   const namesById = new Map(entities.map(({ id, nameZh }) => [id, nameZh]))
+  const tonesById = new Map(
+    muscles.map(({ id, bodyRegion }) => [id, muscleToneByRegion[bodyRegion]]),
+  )
   const rolesByMuscleId = new Map(
     highlightedMuscles.map(({ muscleId, role }) => [muscleId, role]),
   )
@@ -142,6 +158,7 @@ export function BodyMap({
         <svg
           aria-labelledby={`${titleId} ${descriptionId}`}
           className={`body-map__svg body-map__svg--${mode}`}
+          data-visual-style="medical-line-art"
           onClick={selectNearestEntity}
           preserveAspectRatio="xMidYMid meet"
           viewBox="0 0 320 710"
@@ -167,6 +184,8 @@ export function BodyMap({
               const classes = [
                 'body-map__entity',
                 `body-map__entity--${mode}`,
+                mode === 'muscles' &&
+                  `body-map__entity--tone-${tonesById.get(id)}`,
                 selected && 'body-map__entity--selected',
                 role && `body-map__entity--${role} role--${role}`,
               ]
@@ -191,6 +210,47 @@ export function BodyMap({
               )
             })}
           </g>
+          {mode === 'muscles' && (
+            <g
+              aria-hidden="true"
+              className="body-map__labels"
+              data-label-content="muscle-names-only"
+            >
+              {regions.map(({ id }) => {
+                const layout = muscleLabelLayouts[id]
+                const name = namesById.get(id)
+                if (!layout || !name) return null
+                const selected = selectedEntityId === id
+                const labelEdgeX =
+                  layout.align === 'start'
+                    ? layout.x + 4
+                    : layout.align === 'end'
+                      ? layout.x - 4
+                      : layout.x
+
+                return (
+                  <g
+                    className={[
+                      'body-map__label',
+                      `body-map__label--${layout.placement}`,
+                      `body-map__label--${layout.priority}`,
+                    ].join(' ')}
+                    data-selected={selected}
+                    key={`label-${id}`}
+                  >
+                    {layout.placement === 'callout' && (
+                      <path
+                        d={`M ${layout.targetX} ${layout.targetY} L ${labelEdgeX} ${layout.y - 3}`}
+                      />
+                    )}
+                    <text textAnchor={layout.align} x={layout.x} y={layout.y}>
+                      {name}
+                    </text>
+                  </g>
+                )
+              })}
+            </g>
+          )}
         </svg>
       </div>
 
