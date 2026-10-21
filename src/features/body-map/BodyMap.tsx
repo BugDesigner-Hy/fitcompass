@@ -1,11 +1,12 @@
-import { useId, type KeyboardEvent } from 'react'
+import { useId, type KeyboardEvent, type MouseEvent } from 'react'
 import { bones } from '../../data/bones'
 import { muscles } from '../../data/muscles'
 import {
+  BODY_MAP_VIEWBOX_HEIGHT,
+  BODY_MAP_VIEWBOX_WIDTH,
   FigureBackdrop,
-  getHitAreaCenters,
+  getEntityAnchors,
   getRegions,
-  HIT_AREA_SIZE,
 } from './bodyMapGeometry'
 import './BodyMap.css'
 
@@ -33,6 +34,8 @@ const roleLabels: Record<MuscleRole, string> = {
   antagonist: '拮抗肌',
 }
 
+const POINTER_HIT_RADIUS_PX = 22
+
 export function BodyMap({
   mode,
   view,
@@ -58,6 +61,41 @@ export function BodyMap({
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault()
       onEntitySelect(entityId)
+    }
+  }
+
+  const selectNearestEntity = (event: MouseEvent<SVGSVGElement>) => {
+    const bounds = event.currentTarget.getBoundingClientRect()
+    const scale = Math.min(
+      bounds.width / BODY_MAP_VIEWBOX_WIDTH,
+      bounds.height / BODY_MAP_VIEWBOX_HEIGHT,
+    )
+    if (scale <= 0) return
+
+    const offsetX =
+      bounds.left + (bounds.width - BODY_MAP_VIEWBOX_WIDTH * scale) / 2
+    const offsetY =
+      bounds.top + (bounds.height - BODY_MAP_VIEWBOX_HEIGHT * scale) / 2
+    let nearestEntityId: string | undefined
+    let nearestDistanceSquared = Number.POSITIVE_INFINITY
+
+    regions.forEach(({ id }) => {
+      getEntityAnchors(id).forEach(([x, y]) => {
+        const deltaX = event.clientX - (offsetX + x * scale)
+        const deltaY = event.clientY - (offsetY + y * scale)
+        const distanceSquared = deltaX * deltaX + deltaY * deltaY
+        if (distanceSquared < nearestDistanceSquared) {
+          nearestDistanceSquared = distanceSquared
+          nearestEntityId = id
+        }
+      })
+    })
+
+    if (
+      nearestEntityId &&
+      nearestDistanceSquared <= POINTER_HIT_RADIUS_PX ** 2
+    ) {
+      onEntitySelect(nearestEntityId)
     }
   }
 
@@ -94,6 +132,7 @@ export function BodyMap({
         <svg
           aria-labelledby={`${titleId} ${descriptionId}`}
           className={`body-map__svg body-map__svg--${mode}`}
+          onClick={selectNearestEntity}
           preserveAspectRatio="xMidYMid meet"
           viewBox="0 0 320 710"
         >
@@ -104,24 +143,13 @@ export function BodyMap({
           <desc id={descriptionId}>
             使用键盘 Tab 聚焦结构，并按 Enter 或空格键选择。
           </desc>
+          <rect
+            aria-hidden="true"
+            className="body-map__interaction-surface"
+            height={BODY_MAP_VIEWBOX_HEIGHT}
+            width={BODY_MAP_VIEWBOX_WIDTH}
+          />
           <FigureBackdrop view={view} />
-          <g className="body-map__hit-layer" aria-hidden="true">
-            {regions.flatMap(({ id }) =>
-              getHitAreaCenters(id).map(([cx, cy], index) => (
-                <rect
-                  className="body-map__hit-area"
-                  data-hit-area-for={id}
-                  height={HIT_AREA_SIZE}
-                  key={`${id}-${index}`}
-                  onClick={() => onEntitySelect(id)}
-                  rx="8"
-                  width={HIT_AREA_SIZE}
-                  x={cx - HIT_AREA_SIZE / 2}
-                  y={cy - HIT_AREA_SIZE / 2}
-                />
-              )),
-            )}
-          </g>
           <g className="body-map__entity-layer">
             {regions.map(({ id, shape }) => {
               const role = rolesByMuscleId.get(id)
@@ -143,7 +171,10 @@ export function BodyMap({
                   data-entity-id={id}
                   data-highlight-role={role}
                   key={id}
-                  onClick={() => onEntitySelect(id)}
+                  onClick={(event) => {
+                    event.stopPropagation()
+                    onEntitySelect(id)
+                  }}
                   onKeyDown={(event) => selectWithKeyboard(event, id)}
                   role="button"
                   tabIndex={0}

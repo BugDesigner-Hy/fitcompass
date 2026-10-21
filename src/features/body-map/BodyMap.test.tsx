@@ -13,6 +13,31 @@ const baseProps: BodyMapProps = {
   onEntitySelect: vi.fn(),
 }
 
+function mockSvgRect(svg: SVGSVGElement, width: number) {
+  const height = (width * 710) / 320
+  const rect = {
+    x: 10,
+    y: 20,
+    left: 10,
+    top: 20,
+    width,
+    height,
+    right: 10 + width,
+    bottom: 20 + height,
+    toJSON: () => ({}),
+  } as DOMRect
+  vi.spyOn(svg, 'getBoundingClientRect').mockReturnValue(rect)
+  return rect
+}
+
+function svgPointToClient(x: number, y: number, rect: DOMRect) {
+  const scale = Math.min(rect.width / 320, rect.height / 710)
+  return {
+    x: rect.left + (rect.width - 320 * scale) / 2 + x * scale,
+    y: rect.top + (rect.height - 710 * scale) / 2 + y * scale,
+  }
+}
+
 describe('BodyMap', () => {
   it('requests front and back view changes', async () => {
     const user = userEvent.setup()
@@ -57,60 +82,68 @@ describe('BodyMap', () => {
     })
   })
 
-  it('provides practical independent hit areas at the 301px mobile width', () => {
-    const mobileScale = 301 / 320
-    const minimumCssTarget = 24
-    const representedIds = new Set<string>()
-    const { container, rerender } = render(<BodyMap {...baseProps} />)
+  it.each([301, 120])(
+    'keeps a fixed practical hit radius when rendered at %ipx wide',
+    (width) => {
+      const onEntitySelect = vi.fn()
+      const { container } = render(
+        <BodyMap {...baseProps} onEntitySelect={onEntitySelect} />,
+      )
+      const svg = container.querySelector('.body-map__svg') as SVGSVGElement
+      const rect = mockSvgRect(svg, width)
+      const pectoralisMinor = svgPointToClient(137, 181, rect)
 
-    const collectHitAreas = () => {
-      container
-        .querySelectorAll<SVGRectElement>('.body-map__hit-area')
-        .forEach((hitArea) => {
-          const entityId = hitArea.dataset.hitAreaFor
-          expect(entityId).toBeTruthy()
-          representedIds.add(entityId as string)
-          expect(
-            Number(hitArea.getAttribute('width')) * mobileScale,
-          ).toBeGreaterThanOrEqual(minimumCssTarget)
-          expect(
-            Number(hitArea.getAttribute('height')) * mobileScale,
-          ).toBeGreaterThanOrEqual(minimumCssTarget)
-        })
-    }
+      fireEvent.click(svg, {
+        clientX: pectoralisMinor.x + 20,
+        clientY: pectoralisMinor.y,
+      })
 
-    collectHitAreas()
-    rerender(<BodyMap {...baseProps} view="back" />)
-    collectHitAreas()
-    rerender(<BodyMap {...baseProps} mode="bones" view="front" />)
-    collectHitAreas()
-    rerender(<BodyMap {...baseProps} mode="bones" view="back" />)
-    collectHitAreas()
+      expect(onEntitySelect).toHaveBeenCalledWith('pectoralis-minor')
+    },
+  )
 
-    expect(representedIds).toEqual(
-      new Set([...muscles, ...bones].map(({ id }) => id)),
-    )
-  })
-
-  it('routes hit-area activation to its entity without covering visible geometry', () => {
+  it('selects each nearest entity at dense neighboring anchors', () => {
     const onEntitySelect = vi.fn()
     const { container } = render(
-      <BodyMap {...baseProps} onEntitySelect={onEntitySelect} view="back" />,
+      <BodyMap {...baseProps} onEntitySelect={onEntitySelect} />,
     )
-    const hitLayer = container.querySelector('.body-map__hit-layer')
-    const entityLayer = container.querySelector('.body-map__entity-layer')
-    const supraspinatusHitArea = container.querySelector(
-      '[data-hit-area-for="supraspinatus"]',
-    )
+    const svg = container.querySelector('.body-map__svg') as SVGSVGElement
+    const rect = mockSvgRect(svg, 120)
+    const pectoralisMajor = svgPointToClient(120, 180, rect)
+    const pectoralisMinor = svgPointToClient(137, 181, rect)
 
-    expect(hitLayer).not.toBeNull()
-    expect(entityLayer).not.toBeNull()
+    fireEvent.click(svg, {
+      clientX: pectoralisMajor.x,
+      clientY: pectoralisMajor.y,
+    })
+    fireEvent.click(svg, {
+      clientX: pectoralisMinor.x,
+      clientY: pectoralisMinor.y,
+    })
+
+    expect(onEntitySelect).toHaveBeenNthCalledWith(1, 'pectoralis-major')
+    expect(onEntitySelect).toHaveBeenNthCalledWith(2, 'pectoralis-minor')
+  })
+
+  it('does not select an entity far from the body', () => {
+    const onEntitySelect = vi.fn()
+    const { container } = render(
+      <BodyMap {...baseProps} onEntitySelect={onEntitySelect} />,
+    )
+    const svg = container.querySelector('.body-map__svg') as SVGSVGElement
+    const rect = mockSvgRect(svg, 120)
+
+    fireEvent.click(svg, { clientX: rect.left + 2, clientY: rect.top + 2 })
+
+    expect(onEntitySelect).not.toHaveBeenCalled()
+  })
+
+  it('does not render overlapping rectangular hit targets', () => {
+    const { container } = render(<BodyMap {...baseProps} />)
+
     expect(
-      (hitLayer as Element).compareDocumentPosition(entityLayer as Node) &
-        Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy()
-    fireEvent.click(supraspinatusHitArea as Element)
-    expect(onEntitySelect).toHaveBeenCalledWith('supraspinatus')
+      container.querySelector('.body-map__hit-area'),
+    ).not.toBeInTheDocument()
   })
 
   it('selects an entity with click, Enter, and Space', async () => {

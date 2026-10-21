@@ -9,9 +9,9 @@ export interface BodyMapRegion {
 }
 
 export const BODY_MAP_VIEWBOX_WIDTH = 320
-export const HIT_AREA_SIZE = 28
+export const BODY_MAP_VIEWBOX_HEIGHT = 710
 
-const hitAreaCenters: Record<
+const entityAnchors: Record<
   string,
   ReadonlyArray<readonly [number, number]>
 > = {
@@ -199,8 +199,8 @@ const hitAreaCenters: Record<
   ],
 }
 
-export function getHitAreaCenters(entityId: string) {
-  return hitAreaCenters[entityId] ?? []
+export function getEntityAnchors(entityId: string) {
+  return entityAnchors[entityId] ?? []
 }
 
 const pairedEllipses = (
