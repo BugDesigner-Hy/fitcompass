@@ -17,20 +17,24 @@ export function getExerciseById(data: AnatomyData, exerciseId: string) {
 }
 
 export function getExercisesForMuscle(data: AnatomyData, muscleId: string) {
-  return data.exerciseMuscleRelations.flatMap((relation) => {
-    if (relation.muscleId !== muscleId) return []
-    const exercise = getExerciseById(data, relation.exerciseId)
-    return exercise
+  return data.exercises.flatMap((exercise) => {
+    const relation = data.exerciseMuscleRelations.find(
+      (candidate) =>
+        candidate.muscleId === muscleId && candidate.exerciseId === exercise.id,
+    )
+    return relation
       ? [{ exercise, role: relation.role satisfies ExerciseMuscleRole }]
       : []
   })
 }
 
 export function getMusclesForExercise(data: AnatomyData, exerciseId: string) {
-  return data.exerciseMuscleRelations.flatMap((relation) => {
-    if (relation.exerciseId !== exerciseId) return []
-    const muscle = getMuscleById(data, relation.muscleId)
-    return muscle
+  return data.muscles.flatMap((muscle) => {
+    const relation = data.exerciseMuscleRelations.find(
+      (candidate) =>
+        candidate.exerciseId === exerciseId && candidate.muscleId === muscle.id,
+    )
+    return relation
       ? [{ muscle, role: relation.role satisfies ExerciseMuscleRole }]
       : []
   })
@@ -40,18 +44,26 @@ export function getMusclesForJointAction(
   data: AnatomyData,
   jointActionId: string,
 ) {
-  return data.muscleJointActionRelations.flatMap((relation) => {
-    if (relation.jointActionId !== jointActionId) return []
-    const muscle = getMuscleById(data, relation.muscleId)
-    return muscle ? [{ muscle, role: relation.role satisfies MuscleRole }] : []
+  return data.muscles.flatMap((muscle) => {
+    const relation = data.muscleJointActionRelations.find(
+      (candidate) =>
+        candidate.jointActionId === jointActionId &&
+        candidate.muscleId === muscle.id,
+    )
+    return relation
+      ? [{ muscle, role: relation.role satisfies MuscleRole }]
+      : []
   })
 }
 
 export function getJointActionsForMuscle(data: AnatomyData, muscleId: string) {
-  return data.muscleJointActionRelations.flatMap((relation) => {
-    if (relation.muscleId !== muscleId) return []
-    const jointAction = getJointActionById(data, relation.jointActionId)
-    return jointAction
+  return data.jointActions.flatMap((jointAction) => {
+    const relation = data.muscleJointActionRelations.find(
+      (candidate) =>
+        candidate.muscleId === muscleId &&
+        candidate.jointActionId === jointAction.id,
+    )
+    return relation
       ? [{ jointAction, role: relation.role satisfies MuscleRole }]
       : []
   })

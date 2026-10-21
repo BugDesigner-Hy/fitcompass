@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  getMusclesForExercise,
   getMusclesForJointAction,
   getJointActionById,
 } from '../domain/anatomyGraph'
@@ -60,5 +61,59 @@ describe('checked-in anatomy seed data', () => {
     expect(
       reviewedRecords.every(({ reviewStatus }) => reviewStatus === 'draft'),
     ).toBe(true)
+  })
+
+  it.each([
+    'barbell-bench-press',
+    'incline-dumbbell-press',
+    'push-up',
+    'parallel-bar-dip',
+    'pull-up',
+    'chin-up',
+    'lat-pulldown',
+    'barbell-row',
+    'seated-cable-row',
+    'one-arm-dumbbell-row',
+    'dumbbell-pullover',
+    'dumbbell-overhead-press',
+    'barbell-overhead-press',
+    'push-press',
+    'close-grip-bench-press',
+    'back-squat',
+    'front-squat',
+    'goblet-squat',
+    'leg-press',
+    'forward-lunge',
+    'bulgarian-split-squat',
+    'step-up',
+    'conventional-deadlift',
+    'romanian-deadlift',
+    'hip-thrust',
+    'good-morning',
+    'kettlebell-swing',
+    'single-leg-romanian-deadlift',
+    'sumo-deadlift',
+  ])('%s includes a synergist or stabilizer', (exerciseId) => {
+    expect(
+      getMusclesForExercise(anatomyData, exerciseId).some(
+        ({ role }) => role === 'synergist' || role === 'stabilizer',
+      ),
+    ).toBe(true)
+  })
+
+  it.each([
+    'barbell-overhead-press',
+    'push-press',
+    'chin-up',
+    'lat-pulldown',
+    'goblet-squat',
+    'leg-press',
+    'bulgarian-split-squat',
+  ])('%s includes both synergist and stabilizer roles', (exerciseId) => {
+    const roles = getMusclesForExercise(anatomyData, exerciseId).map(
+      ({ role }) => role,
+    )
+    expect(roles).toContain('synergist')
+    expect(roles).toContain('stabilizer')
   })
 })

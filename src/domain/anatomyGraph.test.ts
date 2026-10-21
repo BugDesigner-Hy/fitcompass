@@ -57,6 +57,15 @@ const data = {
       sourceIds: ['editorial'],
       reviewStatus: 'draft',
     },
+    {
+      id: 'shoulder-horizontal-adduction',
+      nameZh: '肩水平内收',
+      nameEn: 'Shoulder horizontal adduction',
+      jointId: 'shoulder',
+      description: '上臂在水平面靠近身体中线。',
+      sourceIds: ['editorial'],
+      reviewStatus: 'draft',
+    },
   ],
   exercises: [
     {
@@ -85,8 +94,8 @@ const data = {
   muscleJointActionRelations: [
     {
       muscleId: 'anterior-deltoid',
-      jointActionId: 'shoulder-flexion',
-      role: 'agonist',
+      jointActionId: 'shoulder-horizontal-adduction',
+      role: 'synergist',
       reviewStatus: 'draft',
     },
     {
@@ -95,18 +104,30 @@ const data = {
       role: 'synergist',
       reviewStatus: 'draft',
     },
-  ],
-  exerciseMuscleRelations: [
     {
-      exerciseId: 'front-raise',
       muscleId: 'anterior-deltoid',
+      jointActionId: 'shoulder-flexion',
       role: 'agonist',
       reviewStatus: 'draft',
     },
+  ],
+  exerciseMuscleRelations: [
     {
       exerciseId: 'overhead-press',
       muscleId: 'anterior-deltoid',
       role: 'synergist',
+      reviewStatus: 'draft',
+    },
+    {
+      exerciseId: 'front-raise',
+      muscleId: 'pectoralis-major',
+      role: 'synergist',
+      reviewStatus: 'draft',
+    },
+    {
+      exerciseId: 'front-raise',
+      muscleId: 'anterior-deltoid',
+      role: 'agonist',
       reviewStatus: 'draft',
     },
   ],
@@ -122,13 +143,14 @@ describe('anatomy graph queries', () => {
     expect(getMuscleById(data, 'unknown')).toBeUndefined()
   })
 
-  it('returns related records with roles in seed relation order', () => {
+  it('returns related records with roles in target entity seed order', () => {
     expect(getExercisesForMuscle(data, 'anterior-deltoid')).toEqual([
       { exercise: data.exercises[0], role: 'agonist' },
       { exercise: data.exercises[1], role: 'synergist' },
     ])
     expect(getMusclesForExercise(data, 'front-raise')).toEqual([
       { muscle: data.muscles[0], role: 'agonist' },
+      { muscle: data.muscles[1], role: 'synergist' },
     ])
     expect(getMusclesForJointAction(data, 'shoulder-flexion')).toEqual([
       { muscle: data.muscles[0], role: 'agonist' },
@@ -136,6 +158,7 @@ describe('anatomy graph queries', () => {
     ])
     expect(getJointActionsForMuscle(data, 'anterior-deltoid')).toEqual([
       { jointAction: data.jointActions[0], role: 'agonist' },
+      { jointAction: data.jointActions[1], role: 'synergist' },
     ])
   })
 
