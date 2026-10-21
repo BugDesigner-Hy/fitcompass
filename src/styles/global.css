@@ -1,0 +1,229 @@
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 20rem;
+  background: var(--color-background);
+  color: var(--color-text);
+  font-family: var(--font-family-sans);
+  line-height: var(--line-height-base);
+}
+
+body {
+  margin: 0;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+a {
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+  box-shadow: var(--focus-ring);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.app-shell {
+  min-height: 100vh;
+  padding: var(--space-4);
+}
+
+.top-bar {
+  display: grid;
+  grid-template-columns: auto minmax(14rem, 34rem) auto;
+  align-items: center;
+  gap: var(--space-6);
+  max-width: 90rem;
+  margin: 0 auto var(--space-4);
+  padding: var(--space-3) var(--space-4);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  text-decoration: none;
+}
+
+.brand-mark {
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  place-items: center;
+  border-radius: var(--radius-sm);
+  background: var(--color-brand);
+  color: var(--color-surface);
+}
+
+.search input {
+  width: 100%;
+  padding: 0.75rem var(--space-4);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.mode-control {
+  display: flex;
+  margin: 0;
+  padding: var(--space-1);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+}
+
+.mode-control label {
+  cursor: pointer;
+}
+
+.mode-control input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.mode-control span {
+  display: block;
+  min-width: 4rem;
+  padding: var(--space-2) var(--space-4);
+  border-radius: 999px;
+  text-align: center;
+}
+
+.mode-control input:checked + span {
+  background: var(--color-brand);
+  color: var(--color-surface);
+  font-weight: var(--font-weight-medium);
+}
+
+.mode-control input:focus-visible + span {
+  box-shadow: var(--focus-ring);
+}
+
+.anatomy-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(18rem, 24rem);
+  gap: var(--space-4);
+  width: 100%;
+  max-width: 90rem;
+  min-height: calc(100vh - 7rem);
+  margin: 0 auto;
+}
+
+.body-map,
+.details-panel,
+.content-page {
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-panel);
+}
+
+.body-map {
+  display: grid;
+  min-height: 34rem;
+  place-items: center;
+  padding: var(--space-8);
+  text-align: center;
+}
+
+.body-map h1 {
+  margin: 0 0 var(--space-3);
+  font-size: var(--font-size-xl);
+  line-height: var(--line-height-tight);
+}
+
+.body-map p:last-child,
+.details-panel p:last-child,
+.content-page p {
+  color: var(--color-text-muted);
+}
+
+.details-panel {
+  padding: var(--space-8);
+}
+
+.details-panel h2 {
+  margin: 0 0 var(--space-3);
+}
+
+.eyebrow {
+  margin: 0 0 var(--space-2);
+  color: var(--color-brand);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.content-page {
+  max-width: 48rem;
+  margin: var(--space-12) auto;
+  padding: var(--space-12);
+}
+
+.text-link {
+  color: var(--color-brand);
+  font-weight: var(--font-weight-medium);
+}
+
+@media (max-width: 48rem) {
+  .app-shell {
+    padding: var(--space-3);
+  }
+
+  .top-bar {
+    grid-template-columns: 1fr auto;
+    gap: var(--space-3);
+    padding: var(--space-2) 0;
+  }
+
+  .search {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  .mode-control span {
+    min-width: auto;
+    padding-inline: var(--space-3);
+  }
+
+  .anatomy-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .body-map {
+    min-height: 28rem;
+    padding: var(--space-6);
+  }
+
+  .details-panel {
+    padding: var(--space-6);
+  }
+
+  .content-page {
+    margin: var(--space-4);
+    padding: var(--space-8);
+  }
+}
