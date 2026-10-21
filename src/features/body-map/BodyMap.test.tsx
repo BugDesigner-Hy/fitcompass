@@ -125,6 +125,43 @@ describe('BodyMap', () => {
     expect(onEntitySelect).toHaveBeenNthCalledWith(2, 'pectoralis-minor')
   })
 
+  it('uses nearest-neighbor coordinates when a pointer click targets an entity group', () => {
+    const onEntitySelect = vi.fn()
+    const { container } = render(
+      <BodyMap {...baseProps} onEntitySelect={onEntitySelect} />,
+    )
+    const svg = container.querySelector('.body-map__svg') as SVGSVGElement
+    const rect = mockSvgRect(svg, 120)
+    const pectoralisMinor = svgPointToClient(137, 181, rect)
+    const pectoralisMajorGroup = screen.getByRole('button', { name: '胸大肌' })
+
+    fireEvent.click(pectoralisMajorGroup, {
+      clientX: pectoralisMinor.x,
+      clientY: pectoralisMinor.y,
+      detail: 1,
+    })
+
+    expect(onEntitySelect).toHaveBeenCalledWith('pectoralis-minor')
+  })
+
+  it('rejects an out-of-radius pointer click targeting an entity group', () => {
+    const onEntitySelect = vi.fn()
+    const { container } = render(
+      <BodyMap {...baseProps} onEntitySelect={onEntitySelect} />,
+    )
+    const svg = container.querySelector('.body-map__svg') as SVGSVGElement
+    const rect = mockSvgRect(svg, 120)
+    const pectoralisMajorGroup = screen.getByRole('button', { name: '胸大肌' })
+
+    fireEvent.click(pectoralisMajorGroup, {
+      clientX: rect.left + 2,
+      clientY: rect.top + 2,
+      detail: 1,
+    })
+
+    expect(onEntitySelect).not.toHaveBeenCalled()
+  })
+
   it('does not select an entity far from the body', () => {
     const onEntitySelect = vi.fn()
     const { container } = render(
@@ -146,13 +183,21 @@ describe('BodyMap', () => {
     ).not.toBeInTheDocument()
   })
 
-  it('selects an entity with click, Enter, and Space', async () => {
-    const user = userEvent.setup()
+  it('selects an entity with pointer click, Enter, and Space', () => {
     const onEntitySelect = vi.fn()
-    render(<BodyMap {...baseProps} onEntitySelect={onEntitySelect} />)
+    const { container } = render(
+      <BodyMap {...baseProps} onEntitySelect={onEntitySelect} />,
+    )
+    const svg = container.querySelector('.body-map__svg') as SVGSVGElement
+    const rect = mockSvgRect(svg, 120)
+    const pectoralisMajor = svgPointToClient(120, 180, rect)
     const pectoralis = screen.getByRole('button', { name: '胸大肌' })
 
-    await user.click(pectoralis)
+    fireEvent.click(pectoralis, {
+      clientX: pectoralisMajor.x,
+      clientY: pectoralisMajor.y,
+      detail: 1,
+    })
     fireEvent.keyDown(pectoralis, { key: 'Enter' })
     fireEvent.keyDown(pectoralis, { key: ' ' })
 
@@ -160,6 +205,16 @@ describe('BodyMap', () => {
     expect(onEntitySelect).toHaveBeenNthCalledWith(1, 'pectoralis-major')
     expect(onEntitySelect).toHaveBeenNthCalledWith(2, 'pectoralis-major')
     expect(onEntitySelect).toHaveBeenNthCalledWith(3, 'pectoralis-major')
+  })
+
+  it('lets coordinate-free assistive activation select the focused entity', () => {
+    const onEntitySelect = vi.fn()
+    render(<BodyMap {...baseProps} onEntitySelect={onEntitySelect} />)
+    const pectoralis = screen.getByRole('button', { name: '胸大肌' })
+
+    fireEvent.click(pectoralis, { detail: 0 })
+
+    expect(onEntitySelect).toHaveBeenCalledWith('pectoralis-major')
   })
 
   it('only exposes entities from the active mode to interaction', () => {

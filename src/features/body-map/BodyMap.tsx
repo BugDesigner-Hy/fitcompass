@@ -64,6 +64,16 @@ export function BodyMap({
     }
   }
 
+  const selectWithAssistiveActivation = (
+    event: MouseEvent<SVGGElement>,
+    entityId: string,
+  ) => {
+    if (event.detail === 0) {
+      event.stopPropagation()
+      onEntitySelect(entityId)
+    }
+  }
+
   const selectNearestEntity = (event: MouseEvent<SVGSVGElement>) => {
     const bounds = event.currentTarget.getBoundingClientRect()
     const scale = Math.min(
@@ -171,10 +181,7 @@ export function BodyMap({
                   data-entity-id={id}
                   data-highlight-role={role}
                   key={id}
-                  onClick={(event) => {
-                    event.stopPropagation()
-                    onEntitySelect(id)
-                  }}
+                  onClick={(event) => selectWithAssistiveActivation(event, id)}
                   onKeyDown={(event) => selectWithKeyboard(event, id)}
                   role="button"
                   tabIndex={0}
