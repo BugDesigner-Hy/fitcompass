@@ -69,6 +69,11 @@
   stroke-width: 2;
 }
 
+.body-map__hit-area {
+  fill: transparent;
+  pointer-events: all;
+}
+
 .body-map__entity {
   cursor: pointer;
   outline: none;

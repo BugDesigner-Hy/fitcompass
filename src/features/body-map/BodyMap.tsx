@@ -1,7 +1,12 @@
-import type { KeyboardEvent } from 'react'
+import { useId, type KeyboardEvent } from 'react'
 import { bones } from '../../data/bones'
 import { muscles } from '../../data/muscles'
-import { FigureBackdrop, getRegions } from './bodyMapGeometry'
+import {
+  FigureBackdrop,
+  getHitAreaCenters,
+  getRegions,
+  HIT_AREA_SIZE,
+} from './bodyMapGeometry'
 import './BodyMap.css'
 
 export type BodyMapMode = 'muscles' | 'bones'
@@ -36,7 +41,11 @@ export function BodyMap({
   onViewChange,
   onEntitySelect,
 }: BodyMapProps) {
+  const instanceId = useId()
+  const titleId = `${instanceId}-body-map-title`
+  const descriptionId = `${instanceId}-body-map-description`
   const entities = mode === 'muscles' ? muscles : bones
+  const regions = getRegions(mode, view)
   const namesById = new Map(entities.map(({ id, nameZh }) => [id, nameZh]))
   const rolesByMuscleId = new Map(
     highlightedMuscles.map(({ muscleId, role }) => [muscleId, role]),
@@ -55,7 +64,11 @@ export function BodyMap({
   return (
     <div className="body-map__explorer">
       <div className="body-map__toolbar">
-        <div className="body-map__view-control" aria-label="人体视图">
+        <div
+          className="body-map__view-control"
+          aria-label="人体视图"
+          role="group"
+        >
           {(
             [
               ['front', '正面'],
@@ -79,48 +92,67 @@ export function BodyMap({
 
       <div className="body-map__canvas">
         <svg
-          aria-labelledby="body-map-svg-title body-map-svg-description"
+          aria-labelledby={`${titleId} ${descriptionId}`}
           className={`body-map__svg body-map__svg--${mode}`}
           preserveAspectRatio="xMidYMid meet"
           viewBox="0 0 320 710"
         >
-          <title id="body-map-svg-title">
+          <title id={titleId}>
             {view === 'front' ? '正面' : '背面'}
             {mode === 'muscles' ? '肌肉' : '骨骼'}示意图
           </title>
-          <desc id="body-map-svg-description">
+          <desc id={descriptionId}>
             使用键盘 Tab 聚焦结构，并按 Enter 或空格键选择。
           </desc>
           <FigureBackdrop view={view} />
-          {getRegions(mode, view).map(({ id, shape }) => {
-            const role = rolesByMuscleId.get(id)
-            const selected = selectedEntityId === id
-            const classes = [
-              'body-map__entity',
-              `body-map__entity--${mode}`,
-              selected && 'body-map__entity--selected',
-              role && `body-map__entity--${role}`,
-            ]
-              .filter(Boolean)
-              .join(' ')
+          <g className="body-map__hit-layer" aria-hidden="true">
+            {regions.flatMap(({ id }) =>
+              getHitAreaCenters(id).map(([cx, cy], index) => (
+                <rect
+                  className="body-map__hit-area"
+                  data-hit-area-for={id}
+                  height={HIT_AREA_SIZE}
+                  key={`${id}-${index}`}
+                  onClick={() => onEntitySelect(id)}
+                  rx="8"
+                  width={HIT_AREA_SIZE}
+                  x={cx - HIT_AREA_SIZE / 2}
+                  y={cy - HIT_AREA_SIZE / 2}
+                />
+              )),
+            )}
+          </g>
+          <g className="body-map__entity-layer">
+            {regions.map(({ id, shape }) => {
+              const role = rolesByMuscleId.get(id)
+              const selected = selectedEntityId === id
+              const classes = [
+                'body-map__entity',
+                `body-map__entity--${mode}`,
+                selected && 'body-map__entity--selected',
+                role && `body-map__entity--${role}`,
+              ]
+                .filter(Boolean)
+                .join(' ')
 
-            return (
-              <g
-                aria-label={namesById.get(id)}
-                aria-pressed={selected}
-                className={classes}
-                data-entity-id={id}
-                data-highlight-role={role}
-                key={id}
-                onClick={() => onEntitySelect(id)}
-                onKeyDown={(event) => selectWithKeyboard(event, id)}
-                role="button"
-                tabIndex={0}
-              >
-                {shape}
-              </g>
-            )
-          })}
+              return (
+                <g
+                  aria-label={namesById.get(id)}
+                  aria-pressed={selected}
+                  className={classes}
+                  data-entity-id={id}
+                  data-highlight-role={role}
+                  key={id}
+                  onClick={() => onEntitySelect(id)}
+                  onKeyDown={(event) => selectWithKeyboard(event, id)}
+                  role="button"
+                  tabIndex={0}
+                >
+                  {shape}
+                </g>
+              )
+            })}
+          </g>
         </svg>
       </div>
 

@@ -26,6 +26,93 @@ describe('BodyMap', () => {
     expect(onViewChange).toHaveBeenNthCalledWith(2, 'front')
   })
 
+  it('exposes the front and back controls as a named group', () => {
+    render(<BodyMap {...baseProps} />)
+
+    const viewGroup = screen.getByRole('group', { name: '人体视图' })
+    expect(viewGroup).toContainElement(
+      screen.getByRole('button', { name: '正面' }),
+    )
+    expect(viewGroup).toContainElement(
+      screen.getByRole('button', { name: '背面' }),
+    )
+  })
+
+  it('uses unique title and description IDs for multiple instances', () => {
+    const { container } = render(
+      <>
+        <BodyMap {...baseProps} />
+        <BodyMap {...baseProps} view="back" />
+      </>,
+    )
+    const maps = Array.from(container.querySelectorAll('.body-map__svg'))
+    const labelledBy = maps.map((map) => map.getAttribute('aria-labelledby'))
+
+    expect(new Set(labelledBy).size).toBe(2)
+    labelledBy.forEach((ids) => {
+      expect(ids).toBeTruthy()
+      ids?.split(' ').forEach((id) => {
+        expect(document.getElementById(id)).toBeInTheDocument()
+      })
+    })
+  })
+
+  it('provides practical independent hit areas at the 301px mobile width', () => {
+    const mobileScale = 301 / 320
+    const minimumCssTarget = 24
+    const representedIds = new Set<string>()
+    const { container, rerender } = render(<BodyMap {...baseProps} />)
+
+    const collectHitAreas = () => {
+      container
+        .querySelectorAll<SVGRectElement>('.body-map__hit-area')
+        .forEach((hitArea) => {
+          const entityId = hitArea.dataset.hitAreaFor
+          expect(entityId).toBeTruthy()
+          representedIds.add(entityId as string)
+          expect(
+            Number(hitArea.getAttribute('width')) * mobileScale,
+          ).toBeGreaterThanOrEqual(minimumCssTarget)
+          expect(
+            Number(hitArea.getAttribute('height')) * mobileScale,
+          ).toBeGreaterThanOrEqual(minimumCssTarget)
+        })
+    }
+
+    collectHitAreas()
+    rerender(<BodyMap {...baseProps} view="back" />)
+    collectHitAreas()
+    rerender(<BodyMap {...baseProps} mode="bones" view="front" />)
+    collectHitAreas()
+    rerender(<BodyMap {...baseProps} mode="bones" view="back" />)
+    collectHitAreas()
+
+    expect(representedIds).toEqual(
+      new Set([...muscles, ...bones].map(({ id }) => id)),
+    )
+  })
+
+  it('routes hit-area activation to its entity without covering visible geometry', () => {
+    const onEntitySelect = vi.fn()
+    const { container } = render(
+      <BodyMap {...baseProps} onEntitySelect={onEntitySelect} view="back" />,
+    )
+    const hitLayer = container.querySelector('.body-map__hit-layer')
+    const entityLayer = container.querySelector('.body-map__entity-layer')
+    const supraspinatusHitArea = container.querySelector(
+      '[data-hit-area-for="supraspinatus"]',
+    )
+
+    expect(hitLayer).not.toBeNull()
+    expect(entityLayer).not.toBeNull()
+    expect(
+      (hitLayer as Element).compareDocumentPosition(entityLayer as Node) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
+    fireEvent.click(supraspinatusHitArea as Element)
+    expect(onEntitySelect).toHaveBeenCalledWith('supraspinatus')
+  })
+
   it('selects an entity with click, Enter, and Space', async () => {
     const user = userEvent.setup()
     const onEntitySelect = vi.fn()

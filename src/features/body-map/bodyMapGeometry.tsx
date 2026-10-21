@@ -8,6 +8,201 @@ export interface BodyMapRegion {
   shape: ReactElement
 }
 
+export const BODY_MAP_VIEWBOX_WIDTH = 320
+export const HIT_AREA_SIZE = 28
+
+const hitAreaCenters: Record<
+  string,
+  ReadonlyArray<readonly [number, number]>
+> = {
+  'pectoralis-major': [
+    [120, 180],
+    [200, 180],
+  ],
+  'pectoralis-minor': [
+    [137, 181],
+    [183, 181],
+  ],
+  'serratus-anterior': [
+    [101, 222],
+    [219, 222],
+  ],
+  'latissimus-dorsi': [
+    [120, 235],
+    [200, 235],
+  ],
+  trapezius: [[160, 160]],
+  'rhomboid-major': [
+    [138, 192],
+    [182, 192],
+  ],
+  'erector-spinae': [
+    [148, 270],
+    [172, 270],
+  ],
+  'anterior-deltoid': [
+    [91, 164],
+    [229, 164],
+  ],
+  'lateral-deltoid': [
+    [82, 183],
+    [238, 183],
+  ],
+  'posterior-deltoid': [
+    [88, 174],
+    [232, 174],
+  ],
+  supraspinatus: [
+    [126, 154],
+    [194, 154],
+  ],
+  infraspinatus: [
+    [124, 187],
+    [196, 187],
+  ],
+  'biceps-brachii': [
+    [75, 246],
+    [245, 246],
+  ],
+  brachialis: [
+    [78, 284],
+    [242, 284],
+  ],
+  brachioradialis: [
+    [68, 335],
+    [252, 335],
+  ],
+  'triceps-brachii': [
+    [74, 252],
+    [246, 252],
+  ],
+  'wrist-flexors': [
+    [57, 355],
+    [263, 355],
+  ],
+  'wrist-extensors': [
+    [56, 355],
+    [264, 355],
+  ],
+  'rectus-abdominis': [[160, 260]],
+  'external-oblique': [
+    [120, 250],
+    [200, 250],
+  ],
+  'internal-oblique': [
+    [130, 290],
+    [190, 290],
+  ],
+  'transversus-abdominis': [[160, 303]],
+  'gluteus-maximus': [
+    [132, 352],
+    [188, 352],
+  ],
+  'gluteus-medius': [
+    [119, 341],
+    [201, 341],
+  ],
+  'hip-adductors': [
+    [140, 430],
+    [180, 430],
+  ],
+  iliopsoas: [
+    [140, 350],
+    [180, 350],
+  ],
+  'tensor-fasciae-latae': [
+    [112, 374],
+    [208, 374],
+  ],
+  'rectus-femoris': [
+    [137, 441],
+    [183, 441],
+  ],
+  'vastus-lateralis': [
+    [118, 448],
+    [202, 448],
+  ],
+  'vastus-medialis': [
+    [151, 490],
+    [169, 490],
+  ],
+  'biceps-femoris': [
+    [124, 450],
+    [196, 450],
+  ],
+  semitendinosus: [
+    [148, 454],
+    [172, 454],
+  ],
+  semimembranosus: [
+    [135, 459],
+    [185, 459],
+  ],
+  gastrocnemius: [
+    [126, 576],
+    [194, 576],
+  ],
+  soleus: [
+    [132, 620],
+    [188, 620],
+  ],
+  'tibialis-anterior': [
+    [126, 590],
+    [194, 590],
+  ],
+  clavicle: [
+    [132, 153],
+    [188, 153],
+  ],
+  scapula: [
+    [123, 185],
+    [197, 185],
+  ],
+  humerus: [
+    [77, 239],
+    [243, 239],
+  ],
+  radius: [
+    [59, 350],
+    [261, 350],
+  ],
+  ulna: [
+    [69, 350],
+    [251, 350],
+  ],
+  sternum: [[160, 207]],
+  ribs: [
+    [125, 215],
+    [195, 215],
+  ],
+  'vertebral-column': [[160, 220]],
+  pelvis: [[160, 350]],
+  femur: [
+    [134, 450],
+    [186, 450],
+  ],
+  patella: [
+    [135, 530],
+    [185, 530],
+  ],
+  tibia: [
+    [131, 600],
+    [189, 600],
+  ],
+  fibula: [
+    [117, 600],
+    [203, 600],
+  ],
+  talus: [
+    [124, 670],
+    [196, 670],
+  ],
+}
+
+export function getHitAreaCenters(entityId: string) {
+  return hitAreaCenters[entityId] ?? []
+}
+
 const pairedEllipses = (
   leftCx: number,
   rightCx: number,
