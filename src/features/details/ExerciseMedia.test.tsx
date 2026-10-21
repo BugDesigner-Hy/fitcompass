@@ -14,6 +14,7 @@ const licensedVideo = {
 } satisfies ExerciseMotionMedia
 
 afterEach(() => {
+  vi.restoreAllMocks()
   vi.unstubAllGlobals()
 })
 
@@ -85,9 +86,17 @@ describe('ExerciseMedia', () => {
     expect(video).toHaveAttribute('controls')
   })
 
-  it('updates playback policy when reduced-motion preference changes', () => {
+  it('pauses active playback and safely attempts resume when reduced-motion preference changes', async () => {
     let matches = false
     const listeners = new Set<() => void>()
+    const pause = vi
+      .spyOn(HTMLMediaElement.prototype, 'pause')
+      .mockImplementation(() => undefined)
+    const play = vi
+      .spyOn(HTMLMediaElement.prototype, 'play')
+      .mockRejectedValue(
+        new DOMException('Autoplay blocked', 'NotAllowedError'),
+      )
     vi.stubGlobal(
       'matchMedia',
       vi.fn().mockReturnValue({
@@ -114,13 +123,16 @@ describe('ExerciseMedia', () => {
     })
     expect(getVideo()).not.toHaveAttribute('autoplay')
     expect(getVideo()).toHaveAttribute('controls')
+    expect(pause).toHaveBeenCalledOnce()
 
-    act(() => {
+    await act(async () => {
       matches = false
       listeners.forEach((listener) => listener())
+      await Promise.resolve()
     })
     expect(getVideo()).toHaveAttribute('autoplay')
     expect(getVideo()).not.toHaveAttribute('controls')
+    expect(play).toHaveBeenCalledOnce()
   })
 
   it('removes a broken video and exposes a stable accessible fallback', () => {

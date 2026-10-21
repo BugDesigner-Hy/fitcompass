@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { ExerciseMotionMedia } from '../../data/exerciseMedia'
 
 function getPrefersReducedMotion() {
@@ -35,8 +35,25 @@ export function ExerciseMedia({
   compact?: boolean
 }) {
   const prefersReducedMotion = usePrefersReducedMotion()
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const previousReducedMotion = useRef(prefersReducedMotion)
   const [failedSrc, setFailedSrc] = useState<string | null>(null)
   const mediaFailed = Boolean(media && failedSrc === media.src)
+
+  useEffect(() => {
+    if (previousReducedMotion.current === prefersReducedMotion) return
+    previousReducedMotion.current = prefersReducedMotion
+
+    const video = videoRef.current
+    if (!video) return
+
+    if (prefersReducedMotion) {
+      video.pause()
+      return
+    }
+
+    void video.play().catch(() => undefined)
+  }, [prefersReducedMotion])
 
   if (!media || mediaFailed) {
     return (
@@ -57,6 +74,7 @@ export function ExerciseMedia({
       className={`exercise-media${compact ? ' exercise-media--compact' : ''}`}
     >
       <video
+        ref={videoRef}
         aria-label={`${exerciseName}动作演示`}
         autoPlay={!prefersReducedMotion}
         controls={prefersReducedMotion}
