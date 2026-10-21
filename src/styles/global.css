@@ -469,6 +469,14 @@ a {
   max-height: 8rem;
 }
 
+.exercise-media .exercise-media__credit--compact {
+  padding: var(--space-1) var(--space-2);
+}
+
+.exercise-media__credit--compact small {
+  line-height: 1.35;
+}
+
 .exercise-card--compact .exercise-media--fallback {
   min-height: 5rem;
   padding: var(--space-3);

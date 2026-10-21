@@ -11,7 +11,7 @@ export function DetailsPanel({
   selection?: ExplorerSelection
   onSelect: (selection: ExplorerSelection) => void
 }) {
-  const [drawerState, setDrawerState] = useState<DrawerState>('half')
+  const [drawerState, setDrawerState] = useState<DrawerState>('collapsed')
 
   return (
     <section
@@ -25,7 +25,7 @@ export function DetailsPanel({
         aria-label="详情面板大小"
       >
         <button
-          aria-label="折叠详情面板"
+          aria-label="收起详情面板"
           aria-pressed={drawerState === 'collapsed'}
           onClick={() => setDrawerState('collapsed')}
           type="button"
@@ -33,12 +33,12 @@ export function DetailsPanel({
           收起
         </button>
         <button
-          aria-label="半屏显示详情"
+          aria-label={drawerState === 'collapsed' ? '查看详情' : '半屏显示详情'}
           aria-pressed={drawerState === 'half'}
           onClick={() => setDrawerState('half')}
           type="button"
         >
-          半屏
+          {drawerState === 'collapsed' ? '查看详情' : '半屏'}
         </button>
         <button
           aria-label="展开详情面板"

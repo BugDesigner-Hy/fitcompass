@@ -36,21 +36,19 @@ export function ExerciseMedia({
         <source src={media.src} type={media.mimeType} />
         你的浏览器无法播放此动作视频。
       </video>
-      {!compact && (
-        <figcaption>
-          <span>循环动作演示</span>
-          <small>
-            作者：{media.author} ·{' '}
-            <a href={media.licenseUrl} rel="noreferrer" target="_blank">
-              {media.license}
-            </a>
-            {' · '}
-            <a href={media.sourceUrl} rel="noreferrer" target="_blank">
-              查看媒体来源
-            </a>
-          </small>
-        </figcaption>
-      )}
+      <figcaption className={compact ? 'exercise-media__credit--compact' : ''}>
+        {!compact && <span>循环动作演示</span>}
+        <small>
+          作者：{media.author} ·{' '}
+          <a href={media.licenseUrl} rel="noreferrer" target="_blank">
+            {media.license}
+          </a>
+          {' · '}
+          <a href={media.sourceUrl} rel="noreferrer" target="_blank">
+            {compact ? '媒体来源' : '查看媒体来源'}
+          </a>
+        </small>
+      </figcaption>
     </figure>
   )
 }

@@ -226,16 +226,30 @@ describe('AppShell details and relationship highlighting', () => {
     expect(screen.getByText('肘关节')).toBeInTheDocument()
   })
 
-  it('provides three accessible mobile drawer states', async () => {
+  it('starts the mobile drawer collapsed and provides an explicit detail control', async () => {
     const user = userEvent.setup()
     renderExplorer()
     const panel = screen.getByRole('region', { name: '解剖详情' })
 
-    await user.click(screen.getByRole('button', { name: '折叠详情面板' }))
     expect(panel).toHaveAttribute('data-drawer-state', 'collapsed')
-    await user.click(screen.getByRole('button', { name: '半屏显示详情' }))
+    const showDetails = screen.getByRole('button', { name: '查看详情' })
+    expect(showDetails).toHaveAttribute('aria-pressed', 'false')
+
+    await user.click(showDetails)
     expect(panel).toHaveAttribute('data-drawer-state', 'half')
     await user.click(screen.getByRole('button', { name: '展开详情面板' }))
     expect(panel).toHaveAttribute('data-drawer-state', 'expanded')
+    await user.click(screen.getByRole('button', { name: '收起详情面板' }))
+    expect(panel).toHaveAttribute('data-drawer-state', 'collapsed')
+  })
+
+  it('keeps the mobile drawer collapsed when an entity is selected', () => {
+    renderExplorer('/?type=muscle&id=pectoralis-major')
+
+    expect(screen.getByRole('region', { name: '解剖详情' })).toHaveAttribute(
+      'data-drawer-state',
+      'collapsed',
+    )
+    expect(screen.getByRole('button', { name: '查看详情' })).toBeInTheDocument()
   })
 })

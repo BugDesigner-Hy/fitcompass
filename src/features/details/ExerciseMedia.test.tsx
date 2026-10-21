@@ -45,6 +45,22 @@ describe('ExerciseMedia', () => {
     )
   })
 
+  it('keeps author, source, and license visible in compact mode', () => {
+    render(
+      <ExerciseMedia compact exerciseName="杠铃卧推" media={licensedVideo} />,
+    )
+
+    expect(screen.getByText(/Goulart/)).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'CC BY-SA 4.0' })).toHaveAttribute(
+      'href',
+      licensedVideo.licenseUrl,
+    )
+    expect(screen.getByRole('link', { name: '媒体来源' })).toHaveAttribute(
+      'href',
+      licensedVideo.sourceUrl,
+    )
+  })
+
   it('uses an honest fallback and never renders a stick-figure SVG', () => {
     const { container } = render(
       <ExerciseMedia exerciseName="深蹲" media={null} />,
