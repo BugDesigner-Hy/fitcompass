@@ -3,6 +3,7 @@ import type {
   ExerciseDifficulty,
   ExerciseEquipment,
 } from '../domain/anatomy'
+import { repdbStillsByExerciseId } from './repdbStills'
 
 type ExerciseSeed = [
   string,
@@ -584,7 +585,9 @@ export const exercises: Exercise[] = exerciseSeeds.map(
     difficulty,
     instructions: [setup, movement],
     illustration: null,
-    sourceIds: ['project-editorial'],
+    sourceIds: repdbStillsByExerciseId[id]
+      ? ['project-editorial', 'repdb']
+      : ['project-editorial'],
     reviewStatus: 'draft',
   }),
 )

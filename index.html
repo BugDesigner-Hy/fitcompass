@@ -3,8 +3,39 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="健身指北：肌肉、关节与训练动作图谱" />
+    <meta
+      name="description"
+      content="健身指北 FitCompass：一张可以点的肌肉、关节与训练动作图谱，帮助你理解动作练哪里、为什么。"
+    />
+    <meta name="theme-color" content="#087e8b" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="zh_CN" />
+    <meta property="og:title" content="健身指北 · FitCompass" />
+    <meta
+      property="og:description"
+      content="交互式人体运动解剖图谱：探索肌肉、关节动作与训练动作之间的关系。"
+    />
+    <meta
+      property="og:image"
+      content="https://bugdesigner-hy.github.io/fitcompass/og-cover.jpg"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
     <title>健身指北 · FitCompass</title>
+    <script>
+      ;(() => {
+        const params = new URLSearchParams(window.location.search)
+        const redirect = params.get('redirect')
+        if (
+          !redirect ||
+          !redirect.startsWith('/') ||
+          redirect.startsWith('//')
+        ) {
+          return
+        }
+        window.history.replaceState(null, '', '/fitcompass' + redirect)
+      })()
+    </script>
   </head>
   <body>
     <div id="root"></div>

@@ -29,16 +29,37 @@ export function ExerciseMedia({
   exerciseName,
   media,
   compact = false,
+  showCredit = true,
 }: {
   exerciseName: string
   media: ExerciseMotionMedia | null
   compact?: boolean
+  showCredit?: boolean
 }) {
   const prefersReducedMotion = usePrefersReducedMotion()
   const videoRef = useRef<HTMLVideoElement>(null)
   const previousReducedMotion = useRef(prefersReducedMotion)
   const [failedSrc, setFailedSrc] = useState<string | null>(null)
-  const mediaFailed = Boolean(media && failedSrc === media.src)
+  const visibleSrc =
+    media?.kind === 'gif' && prefersReducedMotion && media.stillSrc
+      ? media.stillSrc
+      : media?.src
+  const mediaFailed = Boolean(media && visibleSrc && failedSrc === visibleSrc)
+  const showingLicensedStill = Boolean(
+    media?.kind === 'gif' &&
+    prefersReducedMotion &&
+    media.stillLicense &&
+    media.stillSrc,
+  )
+  const credit =
+    media?.kind === 'gif' && showingLicensedStill
+      ? {
+          author: media.stillAuthor ?? media.author,
+          license: media.stillLicense ?? media.license,
+          licenseUrl: media.stillLicenseUrl ?? media.licenseUrl,
+          sourceUrl: media.stillSourceUrl ?? media.sourceUrl,
+        }
+      : media
 
   useEffect(() => {
     if (previousReducedMotion.current === prefersReducedMotion) return
@@ -55,7 +76,7 @@ export function ExerciseMedia({
     void video.play().catch(() => undefined)
   }, [prefersReducedMotion])
 
-  if (!media || mediaFailed) {
+  if (!media || mediaFailed || !visibleSrc) {
     return (
       <div
         aria-label={`${exerciseName}动作演示`}
@@ -63,7 +84,7 @@ export function ExerciseMedia({
         data-testid="exercise-media-fallback"
         role="img"
       >
-        <strong>{mediaFailed ? '动作视频加载失败' : '暂无授权动图'}</strong>
+        <strong>{mediaFailed ? '动作演示加载失败' : '暂无动作动图'}</strong>
         {!compact && <span>动作步骤仍可在下方查看</span>}
       </div>
     )
@@ -73,33 +94,51 @@ export function ExerciseMedia({
     <figure
       className={`exercise-media${compact ? ' exercise-media--compact' : ''}`}
     >
-      <video
-        ref={videoRef}
-        aria-label={`${exerciseName}动作演示`}
-        autoPlay={!prefersReducedMotion}
-        controls={prefersReducedMotion}
-        loop
-        muted
-        onError={() => setFailedSrc(media.src)}
-        playsInline
-        preload={compact ? 'metadata' : 'auto'}
-      >
-        <source src={media.src} type={media.mimeType} />
-        你的浏览器无法播放此动作视频。
-      </video>
-      <figcaption className={compact ? 'exercise-media__credit--compact' : ''}>
-        {!compact && <span>循环动作演示</span>}
-        <small>
-          作者：{media.author} ·{' '}
-          <a href={media.licenseUrl} rel="noreferrer" target="_blank">
-            {media.license}
-          </a>
-          {' · '}
-          <a href={media.sourceUrl} rel="noreferrer" target="_blank">
-            {compact ? '媒体来源' : '查看媒体来源'}
-          </a>
-        </small>
-      </figcaption>
+      {media.kind === 'gif' ? (
+        <img
+          alt={`${exerciseName}动作演示`}
+          onError={() => setFailedSrc(visibleSrc ?? null)}
+          src={visibleSrc}
+        />
+      ) : (
+        <video
+          ref={videoRef}
+          aria-label={`${exerciseName}动作演示`}
+          autoPlay={!prefersReducedMotion}
+          controls={prefersReducedMotion}
+          loop
+          muted
+          onError={() => setFailedSrc(visibleSrc ?? null)}
+          playsInline
+          preload={compact ? 'metadata' : 'auto'}
+        >
+          <source src={media.src} type={media.mimeType} />
+          你的浏览器无法播放此动作视频。
+        </video>
+      )}
+      <span className="motion-mark" aria-hidden="true">
+        <i />
+        <i />
+        <i />
+        {!compact && <span>演示中</span>}
+      </span>
+      {showCredit ? (
+        <figcaption
+          className={compact ? 'exercise-media__credit--compact' : ''}
+        >
+          {!compact && <span>动作演示</span>}
+          <small>
+            来源：{credit?.author} ·{' '}
+            <a href={credit?.licenseUrl} rel="noreferrer" target="_blank">
+              {credit?.license}
+            </a>
+            {' · '}
+            <a href={credit?.sourceUrl} rel="noreferrer" target="_blank">
+              {compact ? '媒体来源' : '查看媒体来源'}
+            </a>
+          </small>
+        </figcaption>
+      ) : null}
     </figure>
   )
 }

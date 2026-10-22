@@ -1,4 +1,12 @@
-dist
-coverage
-node_modules
+node_modules/
+dist/
+coverage/
+tmp/
 package-lock.json
+public/models/*.glb
+*.jpg
+*.jpeg
+*.png
+*.webp
+*.glb*.svg
+public/.nojekyll

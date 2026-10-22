@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { anatomyData } from '../../data/anatomyData'
+import { jointActionsForBone } from '../body-map/boneMotions'
 import { getExerciseMedia } from '../../data/exerciseMedia'
 import type {
   BodyRegion,
@@ -139,7 +140,7 @@ export function WelcomeDetail({ onSelect }: { onSelect: SelectEntity }) {
     <div className="detail-view detail-welcome">
       <p className="eyebrow">结构详情</p>
       <h2 id="details-title">开始探索</h2>
-      <p>点击人体图谱中的结构，或搜索中文名、英文名和稳定 ID。</p>
+      <p>点击人体图谱中的结构。</p>
       <div className="quick-links" aria-label="快速开始">
         <EntityButton
           onSelect={onSelect}
@@ -170,6 +171,58 @@ export function WelcomeDetail({ onSelect }: { onSelect: SelectEntity }) {
   )
 }
 
+function functionCovered(item: string, actionName: string) {
+  return (
+    item === actionName ||
+    item.includes(actionName) ||
+    actionName.includes(item)
+  )
+}
+
+function FunctionActionRow({
+  actions,
+  functions,
+  onSelect,
+}: {
+  actions: ReturnType<typeof getJointActionsForMuscle>
+  functions: readonly string[]
+  onSelect: SelectEntity
+}) {
+  const extras = functions.filter(
+    (item) =>
+      !actions.some(({ jointAction }) =>
+        functionCovered(item, jointAction.nameZh),
+      ),
+  )
+  if (actions.length === 0 && extras.length === 0) return null
+  return (
+    <section className="function-row">
+      <h3>功能与动作</h3>
+      <div className="function-row__items">
+        {actions.map(({ jointAction, role }) => (
+          <button
+            aria-label={jointAction.nameZh}
+            className="function-chip"
+            key={jointAction.id}
+            onClick={() =>
+              onSelect({ type: 'joint-action', id: jointAction.id })
+            }
+            type="button"
+          >
+            {jointAction.nameZh}
+            <RoleLabel role={role} />
+          </button>
+        ))}
+        {extras.map((item) => (
+          <span className="function-chip function-chip--note" key={item}>
+            {item}
+          </span>
+        ))}
+      </div>
+    </section>
+  )
+}
+
 function MuscleDetail({
   id,
   onSelect,
@@ -190,14 +243,11 @@ function MuscleDetail({
         reviewStatus={muscle.reviewStatus}
       />
       <p>{muscle.summary}</p>
-      <section>
-        <h3>主要功能</h3>
-        <ul>
-          {muscle.functions.map((item) => (
-            <li key={item}>{item}</li>
-          ))}
-        </ul>
-      </section>
+      <FunctionActionRow
+        actions={actions}
+        functions={muscle.functions}
+        onSelect={onSelect}
+      />
       {(muscle.origin || muscle.insertion) && (
         <section>
           <h3>起止点</h3>
@@ -206,43 +256,26 @@ function MuscleDetail({
         </section>
       )}
       <section>
-        <h3>相关关节动作</h3>
-        <div className="relation-list">
-          {actions.map(({ jointAction, role }) => (
-            <div className="relation-row" key={jointAction.id}>
-              <EntityButton
-                onSelect={onSelect}
-                selection={{ type: 'joint-action', id: jointAction.id }}
-              >
-                {jointAction.nameZh}
-              </EntityButton>
-              <RoleLabel role={role} />
-            </div>
-          ))}
-        </div>
-      </section>
-      <section>
         <h3>相关训练动作</h3>
         <div className="exercise-card-list">
           {exercises.map(({ exercise, role }) => (
-            <div
-              className="exercise-card exercise-card--compact"
+            <button
+              aria-label={exercise.nameZh}
+              className={`exercise-card exercise-card--compact exercise-card--${role}`}
               key={exercise.id}
+              onClick={() => onSelect({ type: 'exercise', id: exercise.id })}
+              type="button"
             >
               <ExerciseMedia
                 compact
                 exerciseName={exercise.nameZh}
                 media={getExerciseMedia(exercise.id)}
+                showCredit={false}
               />
-              <EntityButton
-                onSelect={onSelect}
-                selection={{ type: 'exercise', id: exercise.id }}
-              >
-                {exercise.nameZh}
-              </EntityButton>
+              <span className="exercise-card__name">{exercise.nameZh}</span>
               <small>{equipmentLabels[exercise.equipment]}</small>
               <RoleLabel role={role} />
-            </div>
+            </button>
           ))}
         </div>
       </section>
@@ -258,6 +291,7 @@ function BoneDetail({ id, onSelect }: { id: string; onSelect: SelectEntity }) {
     const joint = anatomyData.joints.find(({ id }) => id === jointId)
     return joint ? [joint] : []
   })
+  const motions = jointActionsForBone(bone.id)
   return (
     <article className="detail-view">
       <DetailHeader
@@ -267,6 +301,38 @@ function BoneDetail({ id, onSelect }: { id: string; onSelect: SelectEntity }) {
         reviewStatus={bone.reviewStatus}
       />
       <p>{bone.summary}</p>
+      {motions.length > 0 ? (
+        <section>
+          <h3>关节动作</h3>
+          <p>点开动作后，身体图会按角色标出相关肌肉。</p>
+          <div className="motion-list">
+            {relatedJoints.map((joint) => {
+              const actions = motions.filter(
+                (action) => action.jointId === joint.id,
+              )
+              if (actions.length === 0) return null
+              return (
+                <div key={joint.id}>
+                  <p className="motion-list__joint">{joint.nameZh}动作</p>
+                  <div aria-label={`${joint.nameZh}动作`} role="group">
+                    {actions.map((action) => (
+                      <button
+                        key={action.id}
+                        onClick={() =>
+                          onSelect({ type: 'joint-action', id: action.id })
+                        }
+                        type="button"
+                      >
+                        {action.nameZh}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </section>
+      ) : null}
       <section>
         <h3>相关关节</h3>
         <ul>
@@ -330,54 +396,69 @@ function ExerciseDetail({
   id: string
   onSelect: SelectEntity
 }) {
-  const [stepsExpanded, setStepsExpanded] = useState(false)
+  const [stepsExpanded, setStepsExpanded] = useState(true)
   const exercise = getExerciseById(anatomyData, id)
   if (!exercise) return <WelcomeDetail onSelect={onSelect} />
   const related = getMusclesForExercise(anatomyData, id)
   return (
-    <article className="detail-view">
-      <DetailHeader
-        eyebrow={`${equipmentLabels[exercise.equipment]} · ${difficultyLabels[exercise.difficulty]}`}
-        nameEn={exercise.nameEn}
-        nameZh={exercise.nameZh}
-        reviewStatus={exercise.reviewStatus}
-      />
-      <ExerciseMedia
-        exerciseName={exercise.nameZh}
-        media={getExerciseMedia(exercise.id)}
-      />
-      <section>
-        <h3>目标肌肉</h3>
-        <div className="relation-list">
-          {related.map(({ muscle, role }) => (
-            <div className="relation-row" key={muscle.id}>
-              <EntityButton
-                onSelect={onSelect}
-                selection={{ type: 'muscle', id: muscle.id }}
-              >
-                {muscle.nameZh}
-              </EntityButton>
-              <RoleLabel role={role} />
-            </div>
-          ))}
+    <article className="detail-view exercise-detail">
+      <header className="detail-header">
+        <p className="exercise-kicker">
+          <span>{equipmentLabels[exercise.equipment]}</span>
+          <span>{difficultyLabels[exercise.difficulty]}</span>
+        </p>
+        <h2 id="details-title">{exercise.nameZh}</h2>
+        <p className="detail-header__english">{exercise.nameEn}</p>
+        <ReviewBadge status={exercise.reviewStatus} />
+      </header>
+      <div className="exercise-sheet">
+        <div className="exercise-stage">
+          <ExerciseMedia
+            exerciseName={exercise.nameZh}
+            media={getExerciseMedia(exercise.id)}
+          />
         </div>
-      </section>
-      <section className="exercise-steps">
-        <button
-          aria-expanded={stepsExpanded}
-          onClick={() => setStepsExpanded((expanded) => !expanded)}
-          type="button"
-        >
-          {stepsExpanded ? '收起动作步骤' : '展开动作步骤'}
-        </button>
-        {stepsExpanded && (
-          <ol aria-label="动作步骤">
-            {exercise.instructions.map((instruction) => (
-              <li key={instruction}>{instruction}</li>
-            ))}
-          </ol>
-        )}
-      </section>
+        <div className="exercise-sheet__body">
+          <section>
+            <h3>目标肌肉</h3>
+            <div className="function-row__items">
+              {related.map(({ muscle, role }) => (
+                <button
+                  aria-label={muscle.nameZh}
+                  className="function-chip"
+                  key={muscle.id}
+                  onClick={() => onSelect({ type: 'muscle', id: muscle.id })}
+                  type="button"
+                >
+                  {muscle.nameZh}
+                  <RoleLabel role={role} />
+                </button>
+              ))}
+            </div>
+          </section>
+          <section className="exercise-steps">
+            <button
+              aria-expanded={stepsExpanded}
+              onClick={() => setStepsExpanded((expanded) => !expanded)}
+              type="button"
+            >
+              {stepsExpanded ? '收起动作步骤' : '展开动作步骤'}
+            </button>
+            {stepsExpanded && (
+              <ol aria-label="动作步骤">
+                {exercise.instructions.map((instruction, index) => (
+                  <li key={instruction}>
+                    <span aria-hidden="true" className="exercise-step__index">
+                      {index + 1}
+                    </span>
+                    {instruction}
+                  </li>
+                ))}
+              </ol>
+            )}
+          </section>
+        </div>
+      </div>
       <SourceLinks sourceIds={exercise.sourceIds} />
     </article>
   )
@@ -399,6 +480,12 @@ export function DetailsView({
     case 'joint-action':
       return <JointActionDetail id={selection.id} onSelect={onSelect} />
     case 'exercise':
-      return <ExerciseDetail id={selection.id} onSelect={onSelect} />
+      return (
+        <ExerciseDetail
+          key={selection.id}
+          id={selection.id}
+          onSelect={onSelect}
+        />
+      )
   }
 }

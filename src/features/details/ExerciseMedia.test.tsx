@@ -143,7 +143,7 @@ describe('ExerciseMedia', () => {
     fireEvent.error(container.querySelector('video') as HTMLVideoElement)
 
     expect(container.querySelector('video')).not.toBeInTheDocument()
-    expect(screen.getByText('动作视频加载失败')).toBeInTheDocument()
+    expect(screen.getByText('动作演示加载失败')).toBeInTheDocument()
     expect(screen.getByLabelText('杠铃卧推动作演示')).toBeInTheDocument()
   })
 
@@ -152,7 +152,7 @@ describe('ExerciseMedia', () => {
       <ExerciseMedia exerciseName="深蹲" media={null} />,
     )
 
-    expect(screen.getByText('暂无授权动图')).toBeInTheDocument()
+    expect(screen.getByText('暂无动作动图')).toBeInTheDocument()
     expect(screen.getByText('动作步骤仍可在下方查看')).toBeInTheDocument()
     expect(container.querySelector('svg')).not.toBeInTheDocument()
     expect(container.querySelector('video')).not.toBeInTheDocument()

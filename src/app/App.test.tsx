@@ -12,19 +12,16 @@ function renderRoute(route = '/') {
 }
 
 describe('App', () => {
-  it('renders the product name, search, and anatomy modes', () => {
+  it('renders the product name', () => {
     renderRoute()
 
     expect(screen.getByText('健身指北')).toBeInTheDocument()
     expect(screen.getByText('肌肉、关节与训练动作图谱')).toBeInTheDocument()
     expect(screen.getByText('FitCompass')).toBeInTheDocument()
+    expect(screen.queryByRole('search')).not.toBeInTheDocument()
     expect(
-      screen.getByRole('combobox', {
-        name: '搜索肌肉、骨骼、关节动作或训练动作',
-      }),
-    ).toBeInTheDocument()
-    expect(screen.getByRole('radio', { name: '肌肉' })).toBeInTheDocument()
-    expect(screen.getByRole('radio', { name: '骨骼' })).toBeInTheDocument()
+      screen.queryByRole('radio', { name: '骨骼' }),
+    ).not.toBeInTheDocument()
   })
 
   it('gives the main landmark and details region accessible names', () => {

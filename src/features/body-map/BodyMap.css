@@ -1,18 +1,34 @@
 .body-map__explorer {
-  display: grid;
-  gap: var(--space-4);
-  width: min(100%, 42rem);
-  margin-inline: auto;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: 0;
 }
 
 .body-map__toolbar {
   display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-3);
+}
+
+.body-map__controls {
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  gap: var(--space-4);
+  gap: var(--space-3);
+}
+
+.body-map__switchers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
 }
 
 .body-map__view-control {
+  position: relative;
   display: inline-flex;
   flex: 0 0 auto;
   padding: var(--space-1);
@@ -21,7 +37,27 @@
   background: var(--color-background);
 }
 
+.body-map__view-thumb {
+  position: absolute;
+  z-index: 0;
+  top: var(--space-1);
+  bottom: var(--space-1);
+  left: var(--space-1);
+  width: calc((100% - (var(--space-1) * 2)) / 2);
+  border-radius: 999px;
+  background: var(--color-brand);
+  pointer-events: none;
+  transition: transform 0.34s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.body-map__view-thumb[data-active='1'] {
+  transform: translateX(100%);
+}
+
 .body-map__view-control button {
+  position: relative;
+  z-index: 1;
+  flex: 1 1 4.25rem;
   min-width: 4.25rem;
   padding: var(--space-2) var(--space-4);
   border: 0;
@@ -29,303 +65,316 @@
   background: transparent;
   color: var(--color-text-muted);
   cursor: pointer;
+  transition: color 0.34s ease;
 }
 
 .body-map__view-control button[aria-pressed='true'] {
-  background: var(--color-brand);
+  background: transparent;
   color: var(--color-surface);
   font-weight: var(--font-weight-medium);
 }
 
+.body-map__view-control button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
 .body-map__caption {
-  max-width: 25rem;
+  max-width: 40rem;
   margin: 0;
   color: var(--color-text-muted);
   font-size: var(--font-size-sm);
-  text-align: right;
 }
 
-.body-map__canvas {
-  display: grid;
-  min-width: 0;
-  max-height: 65vh;
-  place-items: center;
-  overflow: hidden;
-  border-radius: var(--radius-md);
-  background: var(--color-background);
-}
-
-.body-map__svg {
-  display: block;
-  width: 100%;
-  max-width: 23rem;
+.body-map__viewport {
+  position: relative;
+  flex: 1 1 auto;
   height: auto;
-  max-height: 65vh;
+  min-height: 0;
+  overflow: hidden;
+  border: var(--border-width) solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: #f3f1ec;
 }
 
-.body-map__anatomy-base {
-  fill: #fffdf9;
-  stroke: #31383d;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 1.8;
+.body-map__stage {
+  height: 100%;
 }
 
-.body-map__anatomy-contour {
-  fill: none;
-  stroke: #4f585d;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 1.2;
+.body-map__stage--front {
+  animation: body-swap-front 0.46s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.body-map__anatomy-fiber {
-  fill: none;
-  opacity: 0.58;
-  stroke: #697278;
-  stroke-linecap: round;
-  stroke-width: 0.8;
+.body-map__stage--back {
+  animation: body-swap-back 0.46s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.body-map__interaction-surface {
-  fill: transparent;
-  pointer-events: all;
+@keyframes body-swap-front {
+  from {
+    opacity: 0;
+    transform: translateX(-1.4rem) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
-.body-map__entity {
-  cursor: pointer;
-  outline: none;
-  transition:
-    fill 120ms ease,
-    opacity 120ms ease,
-    stroke 120ms ease;
+@keyframes body-swap-back {
+  from {
+    opacity: 0;
+    transform: translateX(1.4rem) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
-.body-map__entity--muscles {
-  fill: var(--region-color, var(--color-muscle));
-  fill-opacity: 0.68;
-  stroke: color-mix(
-    in srgb,
-    var(--region-color, var(--color-muscle)) 68%,
-    var(--color-text)
-  );
-  stroke-width: 1.4;
+.body-map__viewport canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
 }
 
-.body-map__entity--tone-coral {
-  --region-color: #d76c68;
+.muscle-outline {
+  height: 100%;
+  margin: 0;
 }
 
-.body-map__entity--tone-teal {
-  --region-color: #54aeb1;
+.muscle-outline__board {
+  position: relative;
+  height: 100%;
+  min-height: 0;
 }
 
-.body-map__entity--tone-amber {
-  --region-color: #e1a85d;
+.muscle-outline__figure {
+  width: 100%;
+  height: 100%;
+  padding: var(--space-2) var(--space-3) 0;
 }
 
-.body-map__entity--tone-rose {
-  --region-color: #d8899b;
+.muscle-outline__leaders {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+  animation: callout-in 0.36s ease;
 }
 
-.body-map__entity--tone-aqua {
-  --region-color: #72c6bd;
-}
-
-.body-map__entity--tone-blue {
-  --region-color: #6f9fc8;
-}
-
-.body-map__entity--tone-sand {
-  --region-color: #d7b57d;
-}
-
-.body-map__entity--tone-violet {
-  --region-color: #9b83bf;
-}
-
-.body-map__entity--bones {
-  fill: none;
-  stroke: var(--color-bone);
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 12;
-}
-
-.body-map__entity:hover {
-  opacity: 0.82;
-}
-
-.body-map__entity:focus-visible {
-  filter: drop-shadow(0 0 5px var(--color-focus));
-  stroke: var(--color-focus);
-  stroke-width: 5;
-}
-
-.body-map__entity--bones:focus-visible {
-  stroke-width: 15;
-}
-
-.body-map__entity--selected {
-  fill: var(--color-muscle-selected);
-  fill-opacity: 0.86;
-  stroke: var(--color-text);
-  stroke-width: 4;
-}
-
-.body-map__entity--bones.body-map__entity--selected {
-  fill: none;
-  stroke: var(--color-joint-action);
-  stroke-width: 16;
-}
-
-.body-map__entity--agonist {
-  opacity: 1;
-  stroke-width: 5;
-}
-
-.body-map__entity--synergist {
-  opacity: 0.8;
-  stroke-dasharray: 10 4;
-  stroke-width: 4;
-}
-
-.body-map__entity--stabilizer {
-  opacity: 0.68;
-  stroke-dasharray: 3 4;
-  stroke-width: 5;
-}
-
-.body-map__entity--antagonist {
-  opacity: 0.52;
-  stroke-dasharray: 14 6 3 6;
-  stroke-width: 4;
-}
-
-.body-map__labels {
+.muscle-outline__labels {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
   pointer-events: none;
 }
 
-.body-map__label path {
-  fill: none;
-  opacity: 0.72;
-  stroke: var(--color-text);
-  stroke-width: 0.8;
+.muscle-callout {
+  position: absolute;
+  width: max-content;
+  max-width: 46%;
+  padding: 0.28rem 0.55rem 0.3rem 0.62rem;
+  pointer-events: auto;
+  border: 0;
+  border-radius: 0.55rem;
+  background: linear-gradient(180deg, #fff 0%, #fbfaf7 100%);
+  box-shadow:
+    inset 3px 0 0 #f04438,
+    0 0 0 1px rgb(240 68 56 / 48%),
+    0 8px 16px rgb(240 68 56 / 8%);
+  color: #9f2f28;
+  text-align: left;
+  cursor: pointer;
+  animation: callout-in 0.36s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.body-map__label text {
-  paint-order: stroke;
-  fill: var(--color-text);
-  stroke: color-mix(in srgb, var(--color-background) 92%, transparent);
-  stroke-linejoin: round;
-  stroke-width: 2.5;
-  font-size: 9px;
-  font-weight: 700;
+.muscle-callout[data-travel='true'] {
+  transition:
+    left 0.52s cubic-bezier(0.22, 1, 0.36, 1),
+    top 0.52s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.body-map__label--internal text {
-  font-size: 9.5px;
+.muscle-callout strong {
+  display: block;
+  overflow: hidden;
+  font-size: 0.78rem;
+  font-weight: 680;
+  letter-spacing: 0.03em;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  animation: callout-in 0.42s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.body-map__label--secondary text {
-  font-size: 8px;
-  font-weight: 600;
+.muscle-callout:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
 }
 
-.body-map__label[data-selected='true'] text {
-  fill: var(--color-muscle-selected);
-  stroke-width: 3.5;
-  font-size: 11px;
-  font-weight: 800;
+@keyframes callout-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
-.body-map__label[data-selected='true'] path {
-  opacity: 1;
-  stroke: var(--color-muscle-selected);
-  stroke-width: 1.8;
+.muscle-outline path {
+  transition:
+    fill 0.52s cubic-bezier(0.22, 1, 0.36, 1),
+    stroke 0.52s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.52s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.muscle-outline path[role='button'] {
+  cursor: pointer;
+}
+
+.muscle-outline path[role='button']:hover {
+  filter: brightness(1.06);
+}
+
+.muscle-outline path[role='button']:focus,
+.muscle-outline path[role='button']:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+.attribution {
+  position: absolute;
+  z-index: 4;
+  right: 0.55rem;
+  bottom: 0.55rem;
+}
+
+.attribution__button {
+  display: grid;
+  width: 1.75rem;
+  height: 1.75rem;
+  place-items: center;
+  border: 1px solid rgb(23 32 38 / 14%);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 92%);
+  color: #5d6a70;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 0.95rem;
+  font-style: italic;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgb(36 28 22 / 8%);
+}
+
+.attribution__button[aria-expanded='true'] {
+  border-color: rgb(15 118 110 / 45%);
+  color: var(--color-brand);
+}
+
+.attribution__panel {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 0.4rem);
+  width: min(16rem, calc(100vw - 2.5rem));
+  display: grid;
+  gap: 0.45rem;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid rgb(23 32 38 / 10%);
+  border-radius: 0.7rem;
+  background: rgb(255 255 255 / 96%);
+  color: var(--color-text);
+  font-size: 0.75rem;
+  line-height: 1.45;
+  box-shadow: 0 10px 24px rgb(36 28 22 / 10%);
+  animation: callout-in 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.attribution__panel p {
+  margin: 0;
+}
+
+.attribution__panel a {
+  color: var(--color-brand);
+}
+
+.body-map__loading {
+  display: grid;
+  height: 100%;
+  margin: 0;
+  place-items: center;
+  color: var(--color-text-muted);
 }
 
 .body-map__legend {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: var(--space-2) var(--space-4);
+  gap: var(--space-2);
+  overflow-x: auto;
+}
+
+.body-map__legend-item {
+  flex: 0 0 auto;
+  padding: var(--space-1) var(--space-3);
+  border: var(--border-width) solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
   color: var(--color-text-muted);
   font-size: var(--font-size-sm);
 }
 
-.body-map__legend-item {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.body-map__legend-item i {
-  display: inline-block;
-  width: 1.4rem;
-  height: 0.75rem;
-  border: 2px solid
-    color-mix(in srgb, var(--color-muscle) 70%, var(--color-text));
-  border-radius: 999px;
-  background: var(--color-muscle);
-}
-
-.body-map__legend-item--synergist i {
-  opacity: 0.8;
-  border-style: dashed;
-}
-
-.body-map__legend-item--stabilizer i {
-  opacity: 0.68;
-  border-style: dotted;
-  border-width: 3px;
-}
-
-.body-map__legend-item--antagonist i {
-  opacity: 0.52;
-  border-style: double;
-}
-
-.body-map__legend-item--agonist i {
-  border-width: 4px;
-}
-
-.body-map__legend-item--bone i {
-  border-color: var(--color-bone);
-  background: var(--color-bone);
-}
-
 @media (max-width: 48rem) {
-  .body-map__toolbar {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
   .body-map__view-control {
     align-self: center;
   }
 
   .body-map__caption {
-    max-width: none;
     text-align: center;
   }
+}
 
-  .body-map__canvas,
-  .body-map__svg {
-    max-height: 58vh;
+@media (max-width: 40rem) {
+  .body-map {
+    padding-inline: var(--space-4);
   }
 
-  .body-map__label--secondary:not([data-selected='true']) {
-    display: none;
+  .body-map__explorer,
+  .body-map__viewport {
+    min-width: 0;
+    max-width: 100%;
   }
 
-  .body-map__label text {
-    font-size: 8.5px;
+  .muscle-callout {
+    padding: 0.22rem 0.38rem 0.24rem 0.46rem;
+    border-radius: 0.45rem;
+  }
+
+  .muscle-callout strong {
+    font-size: 0.68rem;
+    letter-spacing: 0.01em;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .body-map__entity {
+  .body-map__view-thumb,
+  .body-map__view-control button,
+  .muscle-outline path,
+  .muscle-callout {
     transition: none;
+  }
+
+  .body-map__stage,
+  .muscle-callout,
+  .muscle-callout strong,
+  .muscle-outline__leaders,
+  .attribution__panel {
+    animation: none;
+  }
+
+  .muscle-outline path[role='button']:hover {
+    filter: none;
   }
 }

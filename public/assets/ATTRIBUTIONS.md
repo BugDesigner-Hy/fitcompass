@@ -1,25 +1,38 @@
-# Anatomy body-map attribution
+# 素材署名
 
-The professional medical line-art figure, front/back contours, muscle-fibre
-lines, interactive muscle regions, bone regions, label positions, and callout
-lines were authored specifically for 健身指北 (FitCompass).
+## 三维人体
 
-The artwork does not copy or incorporate either user-supplied visual reference,
-or any other third-party anatomy artwork. The references were used only to
-clarify the requested information hierarchy and general medical-atlas
-direction.
+肌肉模型来自 Z-Anatomy，骨骼模型来自 BodyParts3D。两者均经过网格简化和 glTF 转换，用于健身指北的交互浏览。
 
-All original anatomy SVG geometry is licensed under
-[Creative Commons Attribution-ShareAlike 4.0 International](https://creativecommons.org/licenses/by-sa/4.0/)
-(CC BY-SA 4.0).
+- Z-Anatomy / BodyParts3D 派生肌肉模型：CC BY-SA 4.0  
+  https://github.com/Z-Anatomy/Models-of-human-anatomy
+- BodyParts3D 骨骼模型：CC BY 4.0  
+  https://dbarchive.biosciencedbc.jp/en/bodyparts3d/lic.html
+- 转换后的模型文件来自  
+  https://github.com/dev-christianmendes/anatomia_humana_3d
 
-## Exercise motion media
+本项目对模型的使用包括重新着色、分组到训练肌肉与主要骨骼，并保留上述署名。
 
-FitCompass does not use stick-figure movement diagrams. Available exercise
-demonstrations are muted, looping videos imported from
-[wger](https://wger.de/). Each media record keeps its own author, source URL,
-and license metadata next to the video.
+## 平面肌肉轮廓
 
-The initial videos are authored by Goulart and licensed under
-[CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). Exercises
-without verified motion-media permission intentionally show “暂无授权动图”.
+平面视图使用 [Body Muscles](https://github.com/vulovix/body-muscles) 的 SVG 分区。
+
+- Body Muscles：Apache-2.0  
+  Copyright 2024 Ivan Vulović  
+  https://github.com/vulovix/body-muscles
+
+轮廓只作为可点击的肌肉分区，并映射到本项目的肌肉说明。
+
+## 动作动图
+
+动作循环图优先使用 [exercises-dataset](https://github.com/hasaneyldrm/exercises-dataset) 中的 GIF。页面会显示来源链接。面拉和胫骨前肌抬起在该数据集中没有对应动作，因此显示“暂无动作动图”。
+
+这些 GIF 的上游媒体权利并不等同于仓库声明的 MIT 许可。当前按个人本地使用接入；公开再分发前需要替换为可再分发的媒体。原文件没有放进本仓库。
+
+可以在应用内使用的静图来自 [RepDB](https://repdb.co) 免费档。署名必须保持可见：Exercise data by RepDB (repdb.co)。页面只保存对应图片的远程地址，不转载 650 条完整数据，也不使用 `premium-samples` 里的预览动画。
+
+以下来源没有接入：
+
+- ExerciseGymGifsDB：维护者说明 GIF 来自网络采集，不能据此再分发。
+- exercise-library：外层 MIT 许可不覆盖其中的 GIF。
+- Vital Animations 免费包：可以放在自己的应用里，但许可禁止把原始视频作为素材库再分发，因此没有提交到本仓库。

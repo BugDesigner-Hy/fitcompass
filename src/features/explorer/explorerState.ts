@@ -9,8 +9,8 @@ import {
   getMusclesForExercise,
   getMusclesForJointAction,
 } from '../../domain/anatomyGraph'
+import { preferredMuscleView } from '../body-map/anatomyIndex'
 import type { BodyMapMode, BodyView } from '../body-map/BodyMap'
-import { getRegions } from '../body-map/bodyMapGeometry'
 
 export type ExplorerEntityType = 'muscle' | 'bone' | 'joint-action' | 'exercise'
 
@@ -52,15 +52,15 @@ export function parseExplorerSearch(searchParams: URLSearchParams) {
       ? { type: rawType as ExplorerEntityType, id }
       : undefined
   return {
-    mode:
-      searchParams.get('mode') === 'bones'
-        ? ('bones' as const)
-        : ('muscles' as const),
+    mode: 'muscles' as const,
     view:
       searchParams.get('view') === 'back'
         ? ('back' as const)
         : ('front' as const),
-    selection: candidate && entityExists(candidate) ? candidate : undefined,
+    selection:
+      candidate && candidate.type !== 'bone' && entityExists(candidate)
+        ? candidate
+        : undefined,
   }
 }
 
@@ -68,14 +68,10 @@ function viewForRelatedMuscles(
   currentView: BodyView,
   muscleIds: readonly string[],
 ) {
-  const visible = new Set(
-    getRegions('muscles', currentView).map(({ id }) => id),
-  )
-  return muscleIds.some((id) => visible.has(id))
+  const preferred = muscleIds.map(preferredMuscleView)
+  return preferred.includes(currentView)
     ? currentView
-    : currentView === 'front'
-      ? 'back'
-      : 'front'
+    : (preferred[0] ?? currentView)
 }
 
 export function useExplorerState() {
@@ -111,7 +107,7 @@ export function useExplorerState() {
     let mode = state.mode
     let view = state.view
     if (selection.type === 'muscle') mode = 'muscles'
-    if (selection.type === 'bone') mode = 'bones'
+    if (selection.type === 'bone') return
     if (selection.type === 'joint-action') {
       mode = 'muscles'
       view = viewForRelatedMuscles(

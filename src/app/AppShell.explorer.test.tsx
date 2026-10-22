@@ -11,10 +11,10 @@ function RouterInspector() {
     <>
       <output aria-label="当前地址">{location.search}</output>
       <button onClick={() => navigate(-1)} type="button">
-        返回
+        历史后退
       </button>
       <button onClick={() => navigate(1)} type="button">
-        前进
+        历史向前
       </button>
     </>
   )
@@ -30,23 +30,24 @@ function renderExplorer(route = '/') {
 }
 
 describe('AppShell explorer URL state', () => {
-  it('restores a valid selection, mode, and view from the URL', () => {
-    renderExplorer('/?mode=bones&view=back&type=bone&id=scapula')
+  it('restores a valid muscle selection and view from the URL', () => {
+    renderExplorer('/?view=back&type=muscle&id=latissimus-dorsi')
 
-    expect(screen.getByRole('radio', { name: '骨骼' })).toBeChecked()
+    expect(
+      screen.queryByRole('radio', { name: '骨骼' }),
+    ).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: '背面' })).toHaveAttribute(
       'aria-pressed',
       'true',
     )
     expect(
-      screen.getByRole('heading', { name: '肩胛骨', level: 2 }),
+      screen.getByRole('heading', { name: '背阔肌', level: 2 }),
     ).toBeInTheDocument()
   })
 
   it('falls back to the welcome state for an invalid type or ID', () => {
     renderExplorer('/?mode=wrong&view=side&type=muscle&id=not-real')
 
-    expect(screen.getByRole('radio', { name: '肌肉' })).toBeChecked()
     expect(
       screen.getByRole('heading', { name: '开始探索', level: 2 }),
     ).toBeInTheDocument()
@@ -56,7 +57,10 @@ describe('AppShell explorer URL state', () => {
     const user = userEvent.setup()
     renderExplorer()
 
-    screen.getByRole('button', { name: '胸大肌' }).focus()
+    const pectoralis = within(
+      screen.getByRole('group', { name: '正面肌肉轮廓' }),
+    ).getAllByRole('button', { name: '胸大肌' })[0]
+    pectoralis.focus()
     await user.keyboard('{Enter}')
     expect(screen.getByRole('status', { name: '当前地址' })).toHaveTextContent(
       'type=muscle',
@@ -70,31 +74,26 @@ describe('AppShell explorer URL state', () => {
       screen.getByRole('heading', { name: '肩屈', level: 2 }),
     ).toBeInTheDocument()
     expect(
-      document.querySelector('[data-entity-id="anterior-deltoid"]'),
-    ).toHaveClass('body-map__entity--agonist')
+      document.querySelector(
+        '[aria-label="三角肌前束"][data-highlight-role="agonist"]',
+      ),
+    ).toBeTruthy()
 
-    await user.click(screen.getByRole('button', { name: '返回' }))
+    await user.click(screen.getByRole('button', { name: '历史后退' }))
     expect(
       screen.getByRole('heading', { name: '胸大肌', level: 2 }),
     ).toBeInTheDocument()
 
-    await user.click(screen.getByRole('button', { name: '前进' }))
+    await user.click(screen.getByRole('button', { name: '历史向前' }))
     expect(
       screen.getByRole('heading', { name: '肩屈', level: 2 }),
     ).toBeInTheDocument()
   })
 
-  it('restores mode, view, selection, details, and highlights across history', async () => {
+  it('restores view, selection, details, and highlights across history', async () => {
     const user = userEvent.setup()
-    renderExplorer('/?mode=bones&view=back&type=bone&id=scapula')
+    renderExplorer('/?view=back')
     const address = screen.getByRole('status', { name: '当前地址' })
-
-    await user.click(screen.getByRole('radio', { name: '肌肉' }))
-    expect(address).toHaveTextContent('mode=muscles')
-    expect(address).toHaveTextContent('view=back')
-    expect(
-      screen.getByRole('heading', { name: '开始探索', level: 2 }),
-    ).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: '肩屈' }))
     expect(address).toHaveTextContent('mode=muscles')
@@ -107,8 +106,7 @@ describe('AppShell explorer URL state', () => {
       document.querySelectorAll('[data-highlight-role]').length,
     ).toBeGreaterThan(1)
 
-    await user.click(screen.getByRole('button', { name: '返回' }))
-    expect(screen.getByRole('radio', { name: '肌肉' })).toBeChecked()
+    await user.click(screen.getByRole('button', { name: '历史后退' }))
     expect(screen.getByRole('button', { name: '背面' })).toHaveAttribute(
       'aria-pressed',
       'true',
@@ -117,19 +115,7 @@ describe('AppShell explorer URL state', () => {
       screen.getByRole('heading', { name: '开始探索', level: 2 }),
     ).toBeInTheDocument()
 
-    await user.click(screen.getByRole('button', { name: '返回' }))
-    expect(screen.getByRole('radio', { name: '骨骼' })).toBeChecked()
-    expect(screen.getByRole('button', { name: '背面' })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    )
-    expect(
-      screen.getByRole('heading', { name: '肩胛骨', level: 2 }),
-    ).toBeInTheDocument()
-
-    await user.click(screen.getByRole('button', { name: '前进' }))
-    await user.click(screen.getByRole('button', { name: '前进' }))
-    expect(screen.getByRole('radio', { name: '肌肉' })).toBeChecked()
+    await user.click(screen.getByRole('button', { name: '历史向前' }))
     expect(screen.getByRole('button', { name: '正面' })).toHaveAttribute(
       'aria-pressed',
       'true',
@@ -143,114 +129,6 @@ describe('AppShell explorer URL state', () => {
   })
 })
 
-describe('AppShell local search', () => {
-  it.each([
-    ['胸大肌', '肌肉'],
-    ['Scapula', '骨骼'],
-    ['shoulder-flexion', '关节动作'],
-    ['杠铃卧推', '训练动作'],
-  ])('searches %s across the four entity types', async (query, typeLabel) => {
-    const user = userEvent.setup()
-    renderExplorer()
-
-    await user.type(
-      screen.getByRole('combobox', {
-        name: '搜索肌肉、骨骼、关节动作或训练动作',
-      }),
-      query,
-    )
-
-    expect(
-      within(screen.getByRole('listbox')).getByRole('option', {
-        name: new RegExp(typeLabel),
-      }),
-    ).toBeInTheDocument()
-  })
-
-  it('supports keyboard selection, filters, clear, Escape, and no results', async () => {
-    const user = userEvent.setup()
-    renderExplorer()
-    const search = screen.getByRole('combobox', {
-      name: '搜索肌肉、骨骼、关节动作或训练动作',
-    })
-
-    await user.selectOptions(
-      screen.getByRole('combobox', { name: '实体类型筛选' }),
-      'exercise',
-    )
-    await user.selectOptions(
-      screen.getByRole('combobox', { name: '器械筛选' }),
-      'barbell',
-    )
-    await user.type(search, 'press')
-    expect(
-      within(screen.getByRole('listbox')).getAllByRole('option').length,
-    ).toBeGreaterThan(1)
-    expect(
-      within(screen.getByRole('listbox')).queryByRole('option', {
-        name: /哑铃/,
-      }),
-    ).not.toBeInTheDocument()
-
-    await user.keyboard('{ArrowDown}{Enter}')
-    expect(
-      screen.getByRole('heading', { name: '杠铃卧推', level: 2 }),
-    ).toBeInTheDocument()
-
-    await user.click(screen.getByRole('button', { name: '清除搜索' }))
-    expect(search).toHaveValue('')
-
-    await user.type(search, '绝对不存在')
-    expect(screen.getByText('没有找到匹配结果')).toBeInTheDocument()
-    await user.keyboard('{Escape}')
-    expect(screen.queryByRole('listbox')).not.toBeInTheDocument()
-  })
-
-  it('applies body-region filters only to muscle results', async () => {
-    const user = userEvent.setup()
-    renderExplorer()
-
-    await user.selectOptions(
-      screen.getByRole('combobox', { name: '身体区域筛选' }),
-      'chest',
-    )
-    await user.type(
-      screen.getByRole('combobox', {
-        name: '搜索肌肉、骨骼、关节动作或训练动作',
-      }),
-      'shoulder-flexion',
-    )
-
-    expect(
-      within(screen.getByRole('listbox')).getByRole('option', {
-        name: /肩屈.*关节动作/,
-      }),
-    ).toBeInTheDocument()
-  })
-
-  it('applies equipment filters only to exercise results', async () => {
-    const user = userEvent.setup()
-    renderExplorer()
-
-    await user.selectOptions(
-      screen.getByRole('combobox', { name: '器械筛选' }),
-      'barbell',
-    )
-    await user.type(
-      screen.getByRole('combobox', {
-        name: '搜索肌肉、骨骼、关节动作或训练动作',
-      }),
-      'pectoralis-major',
-    )
-
-    expect(
-      within(screen.getByRole('listbox')).getByRole('option', {
-        name: /胸大肌.*肌肉/,
-      }),
-    ).toBeInTheDocument()
-  })
-})
-
 describe('AppShell details and relationship highlighting', () => {
   it('navigates from a muscle to related actions and exercises', async () => {
     const user = userEvent.setup()
@@ -260,6 +138,12 @@ describe('AppShell details and relationship highlighting', () => {
     expect(
       screen.getByRole('heading', { name: '肩屈', level: 2 }),
     ).toBeInTheDocument()
+    expect(
+      within(screen.getByRole('region', { name: '解剖详情' })).queryByRole(
+        'button',
+        { name: '返回' },
+      ),
+    ).not.toBeInTheDocument()
 
     const detail = screen.getByRole('region', { name: '解剖详情' })
     await user.click(within(detail).getByRole('button', { name: '胸大肌' }))
@@ -267,6 +151,29 @@ describe('AppShell details and relationship highlighting', () => {
     expect(
       screen.getByRole('heading', { name: '杠铃卧推', level: 2 }),
     ).toBeInTheDocument()
+  })
+
+  it('returns from an opened exercise to the muscle it came from', async () => {
+    const user = userEvent.setup()
+    renderExplorer('/?type=muscle&id=pectoralis-major')
+
+    const detail = screen.getByRole('region', { name: '解剖详情' })
+    expect(
+      within(detail).queryByRole('button', { name: '返回' }),
+    ).not.toBeInTheDocument()
+
+    await user.click(within(detail).getByRole('button', { name: '杠铃卧推' }))
+    expect(
+      screen.getByRole('heading', { name: '杠铃卧推', level: 2 }),
+    ).toBeInTheDocument()
+
+    await user.click(within(detail).getByRole('button', { name: '返回' }))
+    expect(
+      screen.getByRole('heading', { name: '胸大肌', level: 2 }),
+    ).toBeInTheDocument()
+    expect(
+      within(detail).queryByRole('button', { name: '返回' }),
+    ).not.toBeInTheDocument()
   })
 
   it.each([
@@ -290,20 +197,20 @@ describe('AppShell details and relationship highlighting', () => {
     },
   )
 
-  it('shows collapsed ordered steps and every target muscle', async () => {
+  it('shows ordered steps expanded by default and every target muscle', async () => {
     const user = userEvent.setup()
     renderExplorer('/?type=exercise&id=barbell-bench-press')
 
     const detail = screen.getByRole('region', { name: '解剖详情' })
-    expect(
-      within(detail).queryByRole('list', { name: '动作步骤' }),
-    ).not.toBeInTheDocument()
-    await user.click(
-      within(detail).getByRole('button', { name: '展开动作步骤' }),
-    )
     const steps = within(detail).getByRole('list', { name: '动作步骤' })
     expect(steps.tagName).toBe('OL')
     expect(within(steps).getAllByRole('listitem')).toHaveLength(2)
+    const toggle = within(detail).getByRole('button', { name: '收起动作步骤' })
+    expect(toggle).toHaveAttribute('aria-expanded', 'true')
+    await user.click(toggle)
+    expect(
+      within(detail).queryByRole('list', { name: '动作步骤' }),
+    ).not.toBeInTheDocument()
     expect(
       within(detail).getByRole('button', { name: '胸大肌' }),
     ).toBeInTheDocument()
@@ -318,14 +225,15 @@ describe('AppShell details and relationship highlighting', () => {
     ).toBeInTheDocument()
   })
 
-  it('shows a bone and its related joints', () => {
+  it('ignores a bone address and stays on the muscle explorer', () => {
     renderExplorer('/?type=bone&id=humerus')
 
     expect(
-      screen.getByRole('heading', { name: '肱骨', level: 2 }),
+      screen.queryByRole('heading', { name: '肱骨', level: 2 }),
+    ).not.toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: '开始探索', level: 2 }),
     ).toBeInTheDocument()
-    expect(screen.getByText('肩关节')).toBeInTheDocument()
-    expect(screen.getByText('肘关节')).toBeInTheDocument()
   })
 
   it('starts the mobile drawer collapsed and provides an explicit detail control', async () => {
@@ -334,15 +242,50 @@ describe('AppShell details and relationship highlighting', () => {
     const panel = screen.getByRole('region', { name: '解剖详情' })
 
     expect(panel).toHaveAttribute('data-drawer-state', 'collapsed')
-    const showDetails = screen.getByRole('button', { name: '查看详情' })
-    expect(showDetails).toHaveAttribute('aria-pressed', 'false')
+    const toggle = screen.getByRole('button', { name: '查看详情' })
+    expect(toggle).toHaveAttribute('aria-expanded', 'false')
 
-    await user.click(showDetails)
+    await user.click(toggle)
     expect(panel).toHaveAttribute('data-drawer-state', 'half')
-    await user.click(screen.getByRole('button', { name: '展开详情面板' }))
+    await user.click(screen.getByRole('button', { name: '全屏显示详情' }))
     expect(panel).toHaveAttribute('data-drawer-state', 'expanded')
+    expect(
+      screen.getByRole('button', { name: '收起详情面板' }),
+    ).toHaveAttribute('aria-expanded', 'true')
+
     await user.click(screen.getByRole('button', { name: '收起详情面板' }))
     expect(panel).toHaveAttribute('data-drawer-state', 'collapsed')
+    expect(screen.getByRole('button', { name: '查看详情' })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    )
+  })
+
+  it('collapses the half and full drawers when the page outside is clicked', async () => {
+    const user = userEvent.setup()
+    renderExplorer('/?type=muscle&id=pectoralis-major')
+    const panel = screen.getByRole('region', { name: '解剖详情' })
+    const rectus = within(
+      screen.getByRole('group', { name: '正面肌肉轮廓' }),
+    ).getAllByRole('button', { name: '腹直肌' })[0]
+
+    await user.click(screen.getByRole('button', { name: '查看详情' }))
+    expect(panel).toHaveAttribute('data-drawer-state', 'half')
+    await user.click(within(panel).getByRole('button', { name: '肩屈' }))
+    expect(panel).toHaveAttribute('data-drawer-state', 'half')
+
+    await user.click(rectus)
+    expect(panel).toHaveAttribute('data-drawer-state', 'collapsed')
+    expect(
+      within(panel).getByRole('heading', { name: '腹直肌', level: 2 }),
+    ).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: '查看详情' }))
+    await user.click(screen.getByRole('button', { name: '全屏显示详情' }))
+    expect(panel).toHaveAttribute('data-drawer-state', 'expanded')
+    await user.click(screen.getByRole('button', { name: '正面' }))
+    expect(panel).toHaveAttribute('data-drawer-state', 'collapsed')
+    expect(screen.getByRole('button', { name: '查看详情' })).toBeInTheDocument()
   })
 
   it('keeps the mobile drawer collapsed when an entity is selected', () => {
@@ -359,7 +302,9 @@ describe('AppShell details and relationship highlighting', () => {
     const user = userEvent.setup()
     renderExplorer()
     const panel = screen.getByRole('region', { name: '解剖详情' })
-    const pectoralis = screen.getByRole('button', { name: '胸大肌' })
+    const pectoralis = within(
+      screen.getByRole('group', { name: '正面肌肉轮廓' }),
+    ).getAllByRole('button', { name: '胸大肌' })[0]
 
     expect(panel).toHaveAttribute('data-mobile-default', 'collapsed')
     expect(panel).toHaveAttribute('data-drawer-state', 'collapsed')

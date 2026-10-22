@@ -5,9 +5,11 @@ import { App } from './app/App'
 import './styles/tokens.css'
 import './styles/global.css'
 
+const basename = import.meta.env.BASE_URL.replace(/\/$/, '')
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <BrowserRouter>
+    <BrowserRouter basename={basename || undefined}>
       <App />
     </BrowserRouter>
   </StrictMode>,

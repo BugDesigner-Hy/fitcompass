@@ -1,7 +1,7 @@
 {
-  "name": "fitness-guide",
+  "name": "fitcompass",
   "private": true,
-  "version": "0.1.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -10,12 +10,17 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "eslint .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "preview": "vite preview"
   },
   "dependencies": {
+    "@react-three/drei": "^10.7.9",
+    "@react-three/fiber": "^9.8.2",
+    "body-muscles": "^1.0.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
-    "react-router-dom": "^7.9.1"
+    "react-router-dom": "^7.9.1",
+    "three": "^0.186.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",
@@ -25,6 +30,7 @@
     "@types/node": "^24.5.2",
     "@types/react": "^19.1.16",
     "@types/react-dom": "^19.1.9",
+    "@types/three": "^0.186.0",
     "@vitejs/plugin-react": "^5.0.4",
     "eslint": "^9.36.0",
     "eslint-plugin-react-hooks": "^5.2.0",
@@ -36,5 +42,11 @@
     "typescript-eslint": "^8.44.1",
     "vite": "^7.1.7",
     "vitest": "^3.2.4"
+  },
+  "description": "Interactive anatomy explorer for muscles, joints and exercises.",
+  "homepage": "https://bugdesigner-hy.github.io/fitcompass/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BugDesigner-Hy/fitcompass.git"
   }
 }
