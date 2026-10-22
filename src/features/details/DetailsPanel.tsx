@@ -74,6 +74,13 @@ export function DetailsPanel({
       const target = event.target
       if (!(target instanceof Node)) return
       if (panelRef.current?.contains(target)) return
+      if (
+        drawerState === 'half' &&
+        target instanceof Element &&
+        target.closest('.muscle-outline__figure')
+      ) {
+        return
+      }
       setDrawerState('collapsed')
     }
 

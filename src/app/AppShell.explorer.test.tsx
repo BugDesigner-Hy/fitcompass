@@ -279,10 +279,16 @@ describe('AppShell details and relationship highlighting', () => {
     expect(panel).toHaveAttribute('data-drawer-state', 'half')
 
     await user.click(rectus)
-    expect(panel).toHaveAttribute('data-drawer-state', 'collapsed')
+    expect(panel).toHaveAttribute('data-drawer-state', 'half')
     expect(
       within(panel).getByRole('heading', { name: '腹直肌', level: 2 }),
     ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: '全屏显示详情' }),
+    ).toBeInTheDocument()
+
+    await user.click(screen.getByRole('heading', { name: '探索身体结构' }))
+    expect(panel).toHaveAttribute('data-drawer-state', 'collapsed')
 
     await user.click(screen.getByRole('button', { name: '查看详情' }))
     await user.click(screen.getByRole('button', { name: '全屏显示详情' }))
