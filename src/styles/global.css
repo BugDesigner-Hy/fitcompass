@@ -266,13 +266,18 @@ a {
 
 .details-panel__scroll {
   flex: 1 1 auto;
+  min-width: 0;
   min-height: 0;
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overflow-wrap: anywhere;
   scrollbar-gutter: stable;
 }
 
 .detail-view {
   display: grid;
+  max-width: 100%;
+  min-width: 0;
   gap: 1.35rem;
   container-type: inline-size;
 }
@@ -371,6 +376,7 @@ a {
   grid-column: 2;
   grid-row: 1;
   justify-self: end;
+  max-width: 100%;
   margin: 0;
   padding: 0.16rem 0.5rem;
   border: 0;
@@ -379,7 +385,7 @@ a {
   color: #8a5a12;
   font-size: 0.68rem;
   font-weight: var(--font-weight-medium);
-  white-space: nowrap;
+  text-align: end;
 }
 
 .review-badge--reviewed {
@@ -422,8 +428,10 @@ a {
 
 .relation-row {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
+  max-width: 100%;
   gap: 0.5rem;
   padding: 0.2rem 0.45rem 0.2rem 0.2rem;
   border-radius: 0.75rem;
@@ -566,15 +574,16 @@ a {
 .function-row__items {
   display: flex;
   flex: 1 1 auto;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   gap: 0.3rem;
   min-width: 0;
 }
 
 .function-chip {
   display: inline-flex;
-  flex: 0 0 auto;
+  flex: 0 1 auto;
   align-items: center;
+  max-width: 100%;
   gap: 0.35rem;
   padding: 0.24rem 0.42rem 0.24rem 0.55rem;
   border: 0;
@@ -716,6 +725,7 @@ button.exercise-card--compact:hover {
 .exercise-media video {
   display: block;
   width: 100%;
+  max-width: 100%;
   max-height: 18rem;
   background: var(--color-surface);
   object-fit: contain;
@@ -946,6 +956,8 @@ button.exercise-card--compact:hover {
 }
 
 .detail-stage {
+  max-width: 100%;
+  min-width: 0;
   animation: detail-enter 0.42s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -979,6 +991,7 @@ button.exercise-card--compact:hover {
 
 .detail-sources a {
   color: inherit;
+  overflow-wrap: anywhere;
   text-underline-offset: 0.15em;
 }
 
