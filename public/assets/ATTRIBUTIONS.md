@@ -23,6 +23,14 @@
 
 轮廓只作为可点击的肌肉分区，并映射到本项目的肌肉说明。
 
+## 解剖平面图示
+
+理论知识页的三个平面图使用 OpenStax College《Anatomy & Physiology》中的 Planes of the Body。
+
+- OpenStax College：CC BY 4.0  
+  https://openstax.org/books/anatomy-and-physiology-2e/pages/1-6-anatomical-terminology  
+  https://creativecommons.org/licenses/by/4.0/
+
 ## 动作动图
 
 动作循环图优先使用 [exercises-dataset](https://github.com/hasaneyldrm/exercises-dataset) 中的 GIF。页面会显示来源链接。面拉和胫骨前肌抬起在该数据集中没有对应动作，因此显示“暂无动作动图”。

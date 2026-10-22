@@ -1,5 +1,7 @@
 import { useRef } from 'react'
 import { Route, Routes, useLocation, useNavigationType } from 'react-router-dom'
+import { PlanPage } from '../features/plans/PlanPage'
+import { TheoryPage } from '../features/theory/TheoryPage'
 import { AppShell } from './AppShell'
 import { ErrorPage } from './ErrorPage'
 
@@ -48,6 +50,8 @@ export function App() {
             </PlaceholderPage>
           }
         />
+        <Route path="/theory" element={<TheoryPage />} />
+        <Route path="/plans" element={<PlanPage />} />
         <Route
           path="/licenses"
           element={
@@ -56,8 +60,9 @@ export function App() {
               <p>
                 肌肉模型来自 Z-Anatomy（CC BY-SA 4.0），骨骼模型来自
                 BodyParts3D（CC BY 4.0）。平面肌肉轮廓来自 Body
-                Muscles（Apache-2.0，© Ivan
-                Vulović）。模型文件保存在本仓库中，并在素材说明里署名。
+                Muscles（Apache-2.0，© Ivan Vulović）。三个解剖平面的图示来自
+                OpenStax College《Anatomy & Physiology》，CC BY
+                4.0。模型文件保存在本仓库中，并在素材说明里署名。
               </p>
               <p>
                 动作静图使用 RepDB 免费档。页面和本说明中的署名是：

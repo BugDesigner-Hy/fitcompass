@@ -247,6 +247,58 @@
   box-shadow: none;
 }
 
+.plan-entry {
+  position: absolute;
+  z-index: 4;
+  top: 0.55rem;
+  left: 0.55rem;
+  display: grid;
+  width: 1.75rem;
+  height: 1.75rem;
+  place-items: center;
+  border: 1px solid rgb(23 32 38 / 14%);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 92%);
+  color: var(--color-brand);
+  box-shadow: 0 4px 12px rgb(36 28 22 / 8%);
+}
+
+.plan-entry svg {
+  width: 1.05rem;
+  height: 1.05rem;
+}
+
+.plan-entry:hover {
+  background: #fff;
+  color: #065e68;
+}
+
+.theory-bulb {
+  position: absolute;
+  z-index: 4;
+  top: 0.55rem;
+  right: 0.55rem;
+  display: grid;
+  width: 1.75rem;
+  height: 1.75rem;
+  place-items: center;
+  border: 1px solid rgb(23 32 38 / 14%);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 92%);
+  color: #e0a106;
+  box-shadow: 0 4px 12px rgb(36 28 22 / 8%);
+}
+
+.theory-bulb svg {
+  width: 1.05rem;
+  height: 1.05rem;
+}
+
+.theory-bulb:hover {
+  color: #c48408;
+  background: #fff;
+}
+
 .attribution {
   position: absolute;
   z-index: 4;

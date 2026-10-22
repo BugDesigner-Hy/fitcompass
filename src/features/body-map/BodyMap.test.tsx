@@ -1,4 +1,5 @@
 import { render, screen, within } from '@testing-library/react'
+import type { ReactElement } from 'react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
@@ -9,6 +10,10 @@ const baseProps: BodyMapProps = {
   view: 'front',
   onViewChange: () => undefined,
   onEntitySelect: () => undefined,
+}
+
+function renderBodyMap(ui: ReactElement) {
+  return render(<MemoryRouter>{ui}</MemoryRouter>)
 }
 
 function outlineMuscle(name: string) {
@@ -24,14 +29,14 @@ describe('BodyMap', () => {
   it('requests front and back view changes', async () => {
     const user = userEvent.setup()
     const onViewChange = vi.fn()
-    render(<BodyMap {...baseProps} onViewChange={onViewChange} />)
+    renderBodyMap(<BodyMap {...baseProps} onViewChange={onViewChange} />)
 
     await user.click(screen.getByRole('button', { name: '背面' }))
     expect(onViewChange).toHaveBeenCalledWith('back')
   })
 
   it('exposes the front and back controls as a named group', () => {
-    render(<BodyMap {...baseProps} />)
+    renderBodyMap(<BodyMap {...baseProps} />)
 
     expect(screen.getByRole('group', { name: '人体视图' })).toBeInTheDocument()
     expect(
@@ -78,7 +83,7 @@ describe('BodyMap', () => {
   it('selects a mapped muscle from the outline with click and keyboard', async () => {
     const user = userEvent.setup()
     const onEntitySelect = vi.fn()
-    render(<BodyMap {...baseProps} onEntitySelect={onEntitySelect} />)
+    renderBodyMap(<BodyMap {...baseProps} onEntitySelect={onEntitySelect} />)
 
     const pectoral = outlineMuscle('胸大肌')
     await user.click(pectoral)
@@ -89,7 +94,7 @@ describe('BodyMap', () => {
   })
 
   it('does not render a muscle chip list', () => {
-    render(<BodyMap {...baseProps} />)
+    renderBodyMap(<BodyMap {...baseProps} />)
 
     expect(screen.queryByLabelText('结构列表')).not.toBeInTheDocument()
     expect(outlineMuscle('胸大肌')).toBeInTheDocument()
@@ -99,7 +104,7 @@ describe('BodyMap', () => {
   })
 
   it('marks the selected outline and its highlighted role', () => {
-    render(
+    renderBodyMap(
       <BodyMap
         {...baseProps}
         highlightedMuscles={[{ muscleId: 'pectoralis-major', role: 'agonist' }]}
@@ -116,7 +121,7 @@ describe('BodyMap', () => {
   it('keeps every outlined muscle visible after a click', async () => {
     const user = userEvent.setup()
     const onEntitySelect = vi.fn()
-    render(
+    renderBodyMap(
       <BodyMap
         {...baseProps}
         onEntitySelect={onEntitySelect}
@@ -138,7 +143,7 @@ describe('BodyMap', () => {
   it('shows the flat muscle outline and highlights a mapped muscle without a selection ring', async () => {
     const user = userEvent.setup()
     const onEntitySelect = vi.fn()
-    const { rerender } = render(
+    const { rerender } = renderBodyMap(
       <BodyMap {...baseProps} onEntitySelect={onEntitySelect} />,
     )
 
@@ -157,11 +162,13 @@ describe('BodyMap', () => {
     expect(onEntitySelect).toHaveBeenCalledWith('pectoralis-major')
 
     rerender(
-      <BodyMap
-        {...baseProps}
-        onEntitySelect={onEntitySelect}
-        selectedEntityId="pectoralis-major"
-      />,
+      <MemoryRouter>
+        <BodyMap
+          {...baseProps}
+          onEntitySelect={onEntitySelect}
+          selectedEntityId="pectoralis-major"
+        />
+      </MemoryRouter>,
     )
     const selected = screen
       .getAllByRole('button', { name: '胸大肌' })
@@ -174,7 +181,7 @@ describe('BodyMap', () => {
   it('shows only the selected muscle name on the figure', async () => {
     const user = userEvent.setup()
     const onEntitySelect = vi.fn()
-    const { rerender } = render(
+    const { rerender } = renderBodyMap(
       <BodyMap {...baseProps} onEntitySelect={onEntitySelect} />,
     )
 
@@ -183,11 +190,13 @@ describe('BodyMap', () => {
     ).not.toBeInTheDocument()
 
     rerender(
-      <BodyMap
-        {...baseProps}
-        onEntitySelect={onEntitySelect}
-        selectedEntityId="pectoralis-major"
-      />,
+      <MemoryRouter>
+        <BodyMap
+          {...baseProps}
+          onEntitySelect={onEntitySelect}
+          selectedEntityId="pectoralis-major"
+        />
+      </MemoryRouter>,
     )
 
     const label = screen.getByRole('group', { name: '肌肉名称' })
@@ -199,12 +208,14 @@ describe('BodyMap', () => {
     expect(onEntitySelect).toHaveBeenCalledWith('pectoralis-major')
 
     rerender(
-      <BodyMap
-        {...baseProps}
-        onEntitySelect={onEntitySelect}
-        selectedEntityId="pectoralis-major"
-        view="back"
-      />,
+      <MemoryRouter>
+        <BodyMap
+          {...baseProps}
+          onEntitySelect={onEntitySelect}
+          selectedEntityId="pectoralis-major"
+          view="back"
+        />
+      </MemoryRouter>,
     )
     expect(
       screen.queryByRole('group', { name: '肌肉名称' }),

@@ -2,7 +2,7 @@
 
 > 把肌肉、关节和训练动作连成一张可以点的地图。
 
-[**在线体验 →**](https://bugdesigner-hy.github.io/fitcompass/) · [本地开发](#本地开发) · [数据与署名](#数据与署名)
+[**在线体验 →**](https://bugdesigner-hy.github.io/fitcompass/) · [理论知识](https://bugdesigner-hy.github.io/fitcompass/theory) · [训练计划](https://bugdesigner-hy.github.io/fitcompass/plans) · [本地开发](#本地开发)
 
 [![Deploy to GitHub Pages](https://github.com/BugDesigner-Hy/fitcompass/actions/workflows/deploy.yml/badge.svg)](https://github.com/BugDesigner-Hy/fitcompass/actions/workflows/deploy.yml)
 ![React](https://img.shields.io/badge/React-19-087e8b?logo=react&logoColor=white)
@@ -28,6 +28,8 @@
 - **可分享的状态**：视图、选中结构和详情都写入 URL，刷新、前进、后退都能恢复。
 - **移动端适配**：窄屏下详情变为可展开的底部抽屉，保持人体图可操作。
 - **可访问性**：语义化区域、键盘操作、焦点样式和 `prefers-reduced-motion` 支持。
+- **理论知识**：从解剖姿势、三个平面、关节动作到肌肉角色和发力方式，配有图示与图谱直达链接。
+- **训练计划**：三分化、四分化、五分化三套按周安排的计划，包含组数、次数、组间休息和动作备选，并支持一键复制。
 - **纯静态**：不需要后端，构建产物可以直接托管在 GitHub Pages。
 
 ## 动作详情
@@ -96,7 +98,9 @@ src/
 ├─ features/
 │  ├─ body-map/         # 平面肌肉图、轮廓映射、选中与标注
 │  ├─ details/          # 肌肉、骨骼、关节动作和训练动作详情
-│  └─ explorer/         # URL 状态与探索器状态
+│  ├─ explorer/         # URL 状态与探索器状态
+│  ├─ plans/            # 三分化、四分化、五分化训练计划
+│  └─ theory/           # 解剖方向、三个平面与肌肉角色
 ├─ data/                # 肌肉、骨骼、关节、动作与媒体数据
 ├─ domain/              # 领域模型、关系查询和数据校验
 └─ styles/              # 设计令牌与全局样式

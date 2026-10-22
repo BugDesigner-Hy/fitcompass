@@ -249,6 +249,46 @@ export function MuscleOutline({
             />
           </div>
         ) : null}
+        <Link aria-label="训练计划" className="plan-entry" to="/plans">
+          <svg aria-hidden="true" viewBox="0 0 24 24">
+            <rect
+              fill="none"
+              height="14"
+              rx="2"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              width="16"
+              x="4"
+              y="5.5"
+            />
+            <path
+              d="M8 4.2v3M16 4.2v3M4 9.5h16"
+              fill="none"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeWidth="1.8"
+            />
+            <path
+              d="M8 13.2h2.2M12 13.2h2.2M8 16.2h2.2"
+              fill="none"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeWidth="1.8"
+            />
+          </svg>
+        </Link>
+        <Link aria-label="理论知识" className="theory-bulb" to="/theory">
+          <svg aria-hidden="true" viewBox="0 0 24 24">
+            <path
+              d="M12 2.2c-3.4 0-6 2.6-6 5.9 0 2.1 1.1 3.9 2.7 5 .6.4 1 1 1 1.7V16h4.6v-1.2c0-.7.4-1.3 1-1.7 1.6-1.1 2.7-2.9 2.7-5 0-3.3-2.6-5.9-6-5.9z"
+              fill="currentColor"
+            />
+            <path
+              d="M9.4 17.2h5.2v1.1H9.4zm.4 2h4.4v1.1h-4.4zm.6 1.9h3.2v1.2h-3.2z"
+              fill="currentColor"
+            />
+          </svg>
+        </Link>
         <AttributionButton />
       </div>
     </figure>
