@@ -1355,8 +1355,8 @@ button.exercise-card--compact:hover {
 .back-to-top {
   position: fixed;
   z-index: 20;
-  right: 1rem;
-  bottom: 1rem;
+  right: max(2rem, env(safe-area-inset-right));
+  bottom: max(2rem, env(safe-area-inset-bottom));
   display: grid;
   width: 2.25rem;
   height: 2.25rem;
