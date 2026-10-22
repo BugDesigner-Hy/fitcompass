@@ -130,6 +130,51 @@ describe('App', () => {
     ).toBeInTheDocument()
   })
 
+  it('opens a plan exercise fullscreen and returns to the plan', async () => {
+    const user = userEvent.setup()
+    renderRoute('/plans')
+
+    await user.click(screen.getAllByRole('link', { name: '杠铃卧推' })[0])
+
+    const detail = screen.getByRole('region', { name: '解剖详情' })
+    expect(detail).toHaveAttribute('data-drawer-state', 'expanded')
+    expect(
+      within(detail).getByRole('heading', { name: '杠铃卧推', level: 2 }),
+    ).toBeInTheDocument()
+
+    await user.click(within(detail).getByRole('button', { name: '返回' }))
+    expect(
+      screen.getByRole('heading', { name: '训练计划', level: 1 }),
+    ).toBeInTheDocument()
+  })
+
+  it('returns to the same split and scroll position in the plan', async () => {
+    const user = userEvent.setup()
+    let scrollY = 0
+    const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => {})
+    Object.defineProperty(window, 'scrollY', {
+      configurable: true,
+      get: () => scrollY,
+    })
+    renderRoute('/plans')
+
+    await user.click(screen.getByRole('tab', { name: '四分化' }))
+    scrollY = 1280
+    await user.click(screen.getAllByRole('link', { name: '杠铃卧推' })[0])
+
+    const detail = screen.getByRole('region', { name: '解剖详情' })
+    scrollTo.mockClear()
+    await user.click(within(detail).getByRole('button', { name: '返回' }))
+
+    expect(
+      screen.getByRole('heading', { name: '四分化', level: 2 }),
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByRole('heading', { name: '三分化', level: 2 }),
+    ).not.toBeInTheDocument()
+    expect(scrollTo).toHaveBeenCalledWith(0, 1280)
+  })
+
   it('explains the three anatomical planes', () => {
     renderRoute('/theory')
 

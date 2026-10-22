@@ -97,40 +97,24 @@
   background: #f3f1ec;
 }
 
-.body-map__stage {
+.muscle-outline__model {
+  position: relative;
   height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.body-map__stage--front {
-  animation: body-swap-front 0.46s cubic-bezier(0.22, 1, 0.36, 1);
+.muscle-outline__model[data-view='back'] {
+  transform: rotateY(180deg);
 }
 
-.body-map__stage--back {
-  animation: body-swap-back 0.46s cubic-bezier(0.22, 1, 0.36, 1);
+.muscle-outline__board[data-turning='true'] .muscle-outline__model {
+  pointer-events: none;
 }
 
-@keyframes body-swap-front {
-  from {
-    opacity: 0;
-    transform: translateX(-1.4rem) scale(0.985);
-  }
-
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-@keyframes body-swap-back {
-  from {
-    opacity: 0;
-    transform: translateX(1.4rem) scale(0.985);
-  }
-
-  to {
-    opacity: 1;
-    transform: none;
-  }
+.muscle-outline__board[data-turning='true'] .muscle-outline__leaders,
+.muscle-outline__board[data-turning='true'] .muscle-outline__labels {
+  visibility: hidden;
 }
 
 .body-map__viewport canvas {
@@ -148,12 +132,20 @@
   position: relative;
   height: 100%;
   min-height: 0;
+  perspective: 1100px;
 }
 
 .muscle-outline__figure {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   padding: var(--space-2) var(--space-3) 0;
+  backface-visibility: hidden;
+}
+
+.muscle-outline__figure--back {
+  transform: rotateY(180deg);
 }
 
 .muscle-outline__leaders {
@@ -413,12 +405,12 @@
 @media (prefers-reduced-motion: reduce) {
   .body-map__view-thumb,
   .body-map__view-control button,
+  .muscle-outline__model,
   .muscle-outline path,
   .muscle-callout {
     transition: none;
   }
 
-  .body-map__stage,
   .muscle-callout,
   .muscle-callout strong,
   .muscle-outline__leaders,

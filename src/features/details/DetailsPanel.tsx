@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate, useNavigationType } from 'react-router-dom'
 import type { ExplorerSelection } from '../explorer/explorerState'
+import { planPlaceFrom } from '../plans/planPlace'
 import { DetailsView } from './DetailsViews'
 
 function useCanGoBack() {
@@ -35,6 +36,15 @@ const drawerControl: Record<
   expanded: { label: '收起', name: '收起详情面板', next: 'collapsed' },
 }
 
+function openedFromPlan(state: unknown) {
+  return Boolean(
+    state &&
+    typeof state === 'object' &&
+    'fromPlan' in state &&
+    (state as { fromPlan?: boolean }).fromPlan,
+  )
+}
+
 export function DetailsPanel({
   selection,
   onSelect,
@@ -42,12 +52,16 @@ export function DetailsPanel({
   selection?: ExplorerSelection
   onSelect: (selection: ExplorerSelection) => void
 }) {
-  const [drawerState, setDrawerState] = useState<DrawerState>('collapsed')
-  const control = drawerControl[drawerState]
   const canGoBack = useCanGoBack()
+  const location = useLocation()
+  const fromPlan = openedFromPlan(location.state)
   const navigate = useNavigate()
   const panelRef = useRef<HTMLElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
+  const [drawerState, setDrawerState] = useState<DrawerState>(
+    fromPlan && selection?.type === 'exercise' ? 'expanded' : 'collapsed',
+  )
+  const control = drawerControl[drawerState]
 
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = 0
@@ -87,10 +101,18 @@ export function DetailsPanel({
         </button>
       </div>
       <div className="details-panel__scroll" ref={scrollRef}>
-        {selection?.type === 'exercise' && canGoBack ? (
+        {selection?.type === 'exercise' && (canGoBack || fromPlan) ? (
           <button
             className="detail-back"
-            onClick={() => navigate(-1)}
+            onClick={() => {
+              if (fromPlan) {
+                navigate('/plans', {
+                  state: { planPlace: planPlaceFrom(location.state) },
+                })
+                return
+              }
+              navigate(-1)
+            }}
             type="button"
           >
             返回

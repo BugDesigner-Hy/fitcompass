@@ -61,7 +61,6 @@ export function MuscleOutline({
   visibleMuscleIds: readonly string[] | null
   onEntitySelect: (entityId: string) => void
 }) {
-  const regions = view === 'front' ? FRONT_MUSCLES : BACK_MUSCLES
   const roles = new Map(
     highlightedMuscles.map(({ muscleId, role }) => [muscleId, role]),
   )
@@ -74,6 +73,8 @@ export function MuscleOutline({
   const [leaders, setLeaders] = useState<LeaderLine[]>([])
   const [placement, setPlacement] = useState<LabelPlacement | null>(null)
   const [travel, setTravel] = useState(false)
+  const [settledView, setSettledView] = useState(view)
+  const turning = settledView !== view
   const activeCallout = useMemo(() => {
     if (!selectedEntityId) return null
     if (visibleMuscleIds && !visibleMuscleIds.includes(selectedEntityId)) {
@@ -125,7 +126,38 @@ export function MuscleOutline({
     leaderFrame.current = requestAnimationFrame(tick)
   }
 
+  useEffect(() => {
+    if (!turning) return
+    if (prefersReducedMotion()) {
+      setSettledView(view)
+      return
+    }
+    const model = boardRef.current?.querySelector('.muscle-outline__model')
+    const settle = () => setSettledView(view)
+    const onEnd = (event: Event) => {
+      if (
+        event.target !== model ||
+        (event instanceof TransitionEvent && event.propertyName !== 'transform')
+      ) {
+        return
+      }
+      settle()
+    }
+    model?.addEventListener('transitionend', onEnd)
+    const timeoutId = window.setTimeout(settle, 650)
+    return () => {
+      model?.removeEventListener('transitionend', onEnd)
+      window.clearTimeout(timeoutId)
+    }
+  }, [turning, view])
+
   useLayoutEffect(() => {
+    if (turning) {
+      cancelAnimationFrame(leaderFrame.current)
+      drawnLeaderRef.current = null
+      leaderTargetRef.current = null
+      return
+    }
     const board = boardRef.current
     if (!board || !activeCallout) {
       cancelAnimationFrame(leaderFrame.current)
@@ -139,13 +171,13 @@ export function MuscleOutline({
 
     const callout = activeCallout
     const measure = () => {
-      const path = board.querySelector(
+      const figure = board.querySelector(`.muscle-outline__figure--${view}`)
+      const path = figure?.querySelector(
         `[data-callout-target="${callout.targetRegionId}"]`,
       )
       const label = board.querySelector(
         `[data-callout-label="${callout.muscleId}"]`,
       )
-      const figure = board.querySelector('.muscle-outline__figure')
       if (!(path instanceof Element) || !(label instanceof HTMLElement)) return
       if (!(figure instanceof Element)) return
       const origin = board.getBoundingClientRect()
@@ -197,29 +229,35 @@ export function MuscleOutline({
       cancelAnimationFrame(leaderFrame.current)
       leaderTargetRef.current = drawnLeaderRef.current
     }
-  }, [activeCallout])
+  }, [activeCallout, turning, view])
 
   return (
     <figure className="muscle-outline">
-      <div className="muscle-outline__board" ref={boardRef}>
-        <svg
-          aria-label={view === 'front' ? '正面肌肉轮廓' : '背面肌肉轮廓'}
-          className="muscle-outline__figure"
-          role="group"
-          viewBox={view === 'front' ? '0 0 35 93' : '37 0 35 93'}
-        >
-          {regions.map((region) => (
-            <OutlineRegion
-              allow={allow}
-              key={region.id}
-              region={region}
-              roles={roles}
-              selectedEntityId={selectedEntityId}
-              target={region.id === activeCallout?.targetRegionId}
-              onEntitySelect={onEntitySelect}
-            />
-          ))}
-        </svg>
+      <div
+        className="muscle-outline__board"
+        data-turning={turning ? 'true' : 'false'}
+        ref={boardRef}
+      >
+        <div className="muscle-outline__model" data-view={view}>
+          <OutlineFace
+            active={view === 'front'}
+            activeCallout={activeCallout}
+            allow={allow}
+            face="front"
+            roles={roles}
+            selectedEntityId={selectedEntityId}
+            onEntitySelect={onEntitySelect}
+          />
+          <OutlineFace
+            active={view === 'back'}
+            activeCallout={activeCallout}
+            allow={allow}
+            face="back"
+            roles={roles}
+            selectedEntityId={selectedEntityId}
+            onEntitySelect={onEntitySelect}
+          />
+        </div>
         <svg aria-hidden="true" className="muscle-outline__leaders">
           {leaders.map((leader) => (
             <g key="active">
@@ -362,6 +400,55 @@ function AttributionButton() {
   )
 }
 
+function prefersReducedMotion() {
+  return (
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  )
+}
+
+function OutlineFace({
+  face,
+  active,
+  allow,
+  roles,
+  selectedEntityId,
+  activeCallout,
+  onEntitySelect,
+}: {
+  face: BodyView
+  active: boolean
+  allow: Set<string> | null
+  roles: Map<string, MuscleRole>
+  selectedEntityId?: string
+  activeCallout: OutlineCallout | null
+  onEntitySelect: (entityId: string) => void
+}) {
+  const regions = face === 'front' ? FRONT_MUSCLES : BACK_MUSCLES
+  return (
+    <svg
+      aria-hidden={active ? undefined : true}
+      aria-label={face === 'front' ? '正面肌肉轮廓' : '背面肌肉轮廓'}
+      className={`muscle-outline__figure muscle-outline__figure--${face}`}
+      role="group"
+      viewBox={face === 'front' ? '0 0 35 93' : '37 0 35 93'}
+    >
+      {regions.map((region) => (
+        <OutlineRegion
+          allow={allow}
+          frozen={!active}
+          key={region.id}
+          region={region}
+          roles={roles}
+          selectedEntityId={selectedEntityId}
+          target={active && region.id === activeCallout?.targetRegionId}
+          onEntitySelect={onEntitySelect}
+        />
+      ))}
+    </svg>
+  )
+}
+
 function Callout({
   callout,
   placement,
@@ -472,6 +559,7 @@ function OutlineRegion({
   roles,
   selectedEntityId,
   target,
+  frozen = false,
   onEntitySelect,
 }: {
   region: MuscleDef
@@ -479,12 +567,15 @@ function OutlineRegion({
   roles: Map<string, MuscleRole>
   selectedEntityId?: string
   target: boolean
+  frozen?: boolean
   onEntitySelect: (entityId: string) => void
 }) {
   const owners = muscleIdsForOutline(region.id)
   const interactiveId = muscleIdForOutline(region.id)
   const included =
-    interactiveId !== null && (allow === null || allow.has(interactiveId))
+    !frozen &&
+    interactiveId !== null &&
+    (allow === null || allow.has(interactiveId))
   const selected = Boolean(
     selectedEntityId && owners.includes(selectedEntityId),
   )

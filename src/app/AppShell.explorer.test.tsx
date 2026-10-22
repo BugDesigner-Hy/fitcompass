@@ -205,8 +205,11 @@ describe('AppShell details and relationship highlighting', () => {
     const steps = within(detail).getByRole('list', { name: '动作步骤' })
     expect(steps.tagName).toBe('OL')
     expect(within(steps).getAllByRole('listitem')).toHaveLength(2)
+    expect(
+      within(detail).getByRole('button', { name: '收起动作步骤' }),
+    ).toHaveAttribute('aria-expanded', 'true')
+    expect(detail).toHaveAttribute('data-drawer-state', 'collapsed')
     const toggle = within(detail).getByRole('button', { name: '收起动作步骤' })
-    expect(toggle).toHaveAttribute('aria-expanded', 'true')
     await user.click(toggle)
     expect(
       within(detail).queryByRole('list', { name: '动作步骤' }),
@@ -283,7 +286,13 @@ describe('AppShell details and relationship highlighting', () => {
     await user.click(screen.getByRole('button', { name: '查看详情' }))
     await user.click(screen.getByRole('button', { name: '全屏显示详情' }))
     expect(panel).toHaveAttribute('data-drawer-state', 'expanded')
-    await user.click(screen.getByRole('button', { name: '正面' }))
+    await user.click(screen.getByRole('button', { name: '背面' }))
+    expect(screen.getByRole('button', { name: '背面' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    expect(panel).toHaveAttribute('data-drawer-state', 'expanded')
+    await user.click(screen.getByRole('heading', { name: '探索身体结构' }))
     expect(panel).toHaveAttribute('data-drawer-state', 'collapsed')
     expect(screen.getByRole('button', { name: '查看详情' })).toBeInTheDocument()
   })

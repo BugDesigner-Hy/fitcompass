@@ -1,4 +1,4 @@
-import { useId, useRef } from 'react'
+import { useId } from 'react'
 import { MuscleOutline } from './MuscleOutline'
 import './BodyMap.css'
 
@@ -35,18 +35,6 @@ export function BodyMap({
   onMuscleSelect,
 }: BodyMapProps) {
   const titleId = useId()
-  const motion = useRef({
-    view,
-    kind: 'none' as 'none' | 'front' | 'back',
-    ready: false,
-  })
-  let stageMotion = motion.current.kind
-  if (!motion.current.ready) {
-    stageMotion = 'none'
-  } else if (motion.current.view !== view) {
-    stageMotion = view === 'back' ? 'back' : 'front'
-  }
-  motion.current = { view, kind: stageMotion, ready: true }
 
   return (
     <div className="body-map__explorer">
@@ -57,6 +45,7 @@ export function BodyMap({
               aria-label="人体视图"
               className="body-map__view-control"
               role="group"
+              onPointerDown={(event) => event.stopPropagation()}
             >
               <span
                 aria-hidden="true"
@@ -92,22 +81,13 @@ export function BodyMap({
         <p className="sr-only" id={titleId}>
           {view === 'front' ? '正面' : '背面'}肌肉图
         </p>
-        <div
-          className={
-            stageMotion === 'none'
-              ? 'body-map__stage'
-              : `body-map__stage body-map__stage--${stageMotion}`
-          }
-          key={view}
-        >
-          <MuscleOutline
-            highlightedMuscles={highlightedMuscles}
-            onEntitySelect={onMuscleSelect ?? onEntitySelect}
-            selectedEntityId={selectedEntityId}
-            view={view}
-            visibleMuscleIds={null}
-          />
-        </div>
+        <MuscleOutline
+          highlightedMuscles={highlightedMuscles}
+          onEntitySelect={onMuscleSelect ?? onEntitySelect}
+          selectedEntityId={selectedEntityId}
+          view={view}
+          visibleMuscleIds={null}
+        />
       </div>
 
       {highlightedMuscles.length > 0 ? (

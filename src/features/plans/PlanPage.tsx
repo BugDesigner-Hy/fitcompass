@@ -1,7 +1,8 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import type { CSSProperties, KeyboardEvent } from 'react'
-import { Link } from 'react-router-dom'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import type { CSSProperties, KeyboardEvent, MouseEvent } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { BackToTop } from '../../app/BackToTop'
+import { planPlaceFrom } from './planPlace'
 
 type PlanAlternative = {
   id: string
@@ -465,6 +466,51 @@ async function writeClipboard(text: string) {
   if (!copied) throw new Error('copy failed')
 }
 
+function planExercise(id: string) {
+  return {
+    pathname: '/',
+    search: `?type=exercise&id=${id}`,
+  }
+}
+
+function PlanExerciseLink({
+  id,
+  splitId,
+  children,
+}: {
+  id: string
+  splitId: string
+  children: string
+}) {
+  const navigate = useNavigate()
+
+  function openExercise(event: MouseEvent<HTMLAnchorElement>) {
+    if (
+      event.defaultPrevented ||
+      event.button !== 0 ||
+      event.metaKey ||
+      event.altKey ||
+      event.ctrlKey ||
+      event.shiftKey
+    ) {
+      return
+    }
+    event.preventDefault()
+    navigate(planExercise(id), {
+      state: {
+        fromPlan: true,
+        planPlace: { scrollY: window.scrollY, splitId },
+      },
+    })
+  }
+
+  return (
+    <Link onClick={openExercise} to={planExercise(id)}>
+      {children}
+    </Link>
+  )
+}
+
 function prefersReducedMotion() {
   return (
     typeof window.matchMedia === 'function' &&
@@ -473,7 +519,14 @@ function prefersReducedMotion() {
 }
 
 export function PlanPage() {
-  const [activeId, setActiveId] = useState(splits[0].id)
+  const location = useLocation()
+  const planPlace = useMemo(
+    () => planPlaceFrom(location.state),
+    [location.state],
+  )
+  const [activeId, setActiveId] = useState(
+    () => planPlace?.splitId ?? splits[0].id,
+  )
   const [copied, setCopied] = useState(false)
   const frameRef = useRef<HTMLDivElement>(null)
   const panelRef = useRef<HTMLDivElement>(null)
@@ -504,6 +557,16 @@ export function PlanPage() {
     })
     return () => window.cancelAnimationFrame(frameId)
   }, [activeId])
+
+  useLayoutEffect(() => {
+    if (!planPlace) return
+    const top = planPlace.scrollY
+    window.scrollTo(0, top)
+    const frameId = window.requestAnimationFrame(() => {
+      window.scrollTo(0, top)
+    })
+    return () => window.cancelAnimationFrame(frameId)
+  }, [planPlace])
 
   useEffect(() => {
     const onResize = () => {
@@ -567,7 +630,6 @@ export function PlanPage() {
       <Link className="text-link" to="/">
         返回人体图谱
       </Link>
-      <p className="eyebrow">按表练</p>
       <h1>训练计划</h1>
       <p>
         下面三套都可以直接按表练。每套写了星期、动作顺序、组数、次数和组间休息。先选定一套，连续练满
@@ -579,9 +641,13 @@ export function PlanPage() {
           <p key={paragraph}>{paragraph}</p>
         ))}
         <p>
-          <Link to="/?type=exercise&id=back-squat">杠铃深蹲</Link>
+          <PlanExerciseLink id="back-squat" splitId={active.id}>
+            杠铃深蹲
+          </PlanExerciseLink>
           如果腰或膝守不住，先换成
-          <Link to="/?type=exercise&id=goblet-squat">高脚杯深蹲</Link>
+          <PlanExerciseLink id="goblet-squat" splitId={active.id}>
+            高脚杯深蹲
+          </PlanExerciseLink>
           ，组数和次数不变。休息日可以散步，不要把同一天的内容再练一遍。关节刺痛就停这个动作；肌肉酸胀可以继续。
         </p>
       </section>
@@ -680,9 +746,9 @@ export function PlanPage() {
                   <ol className="plan-session">
                     {day.exercises.map((exercise) => (
                       <li key={exercise.id}>
-                        <Link to={`/?type=exercise&id=${exercise.id}`}>
+                        <PlanExerciseLink id={exercise.id} splitId={active.id}>
                           {exercise.name}
-                        </Link>
+                        </PlanExerciseLink>
                         <span className="plan-session__dose">
                           {exercise.sets} · {exercise.rest}
                         </span>
@@ -690,12 +756,13 @@ export function PlanPage() {
                           <p className="plan-session__alts">
                             <span>备选</span>
                             {exercise.alternatives.map((alternative) => (
-                              <Link
+                              <PlanExerciseLink
+                                id={alternative.id}
                                 key={alternative.id}
-                                to={`/?type=exercise&id=${alternative.id}`}
+                                splitId={active.id}
                               >
                                 {alternative.name}
-                              </Link>
+                              </PlanExerciseLink>
                             ))}
                           </p>
                         ) : null}
