@@ -29,6 +29,13 @@ const roleLabels: Record<MuscleRole, string> = {
   antagonist: '拮抗肌',
 }
 
+const roleOrder: Record<MuscleRole, number> = {
+  agonist: 0,
+  synergist: 1,
+  stabilizer: 2,
+  antagonist: 3,
+}
+
 const regionLabels: Record<BodyRegion, string> = {
   chest: '胸部',
   back: '背部',
@@ -399,7 +406,9 @@ function ExerciseDetail({
   const [stepsExpanded, setStepsExpanded] = useState(true)
   const exercise = getExerciseById(anatomyData, id)
   if (!exercise) return <WelcomeDetail onSelect={onSelect} />
-  const related = getMusclesForExercise(anatomyData, id)
+  const related = getMusclesForExercise(anatomyData, id).sort(
+    (left, right) => roleOrder[left.role] - roleOrder[right.role],
+  )
   return (
     <article className="detail-view exercise-detail">
       <header className="detail-header">

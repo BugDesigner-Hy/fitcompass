@@ -214,18 +214,19 @@ describe('AppShell details and relationship highlighting', () => {
     expect(
       within(detail).queryByRole('list', { name: '动作步骤' }),
     ).not.toBeInTheDocument()
+    const targets = within(detail).getByRole('heading', {
+      name: '目标肌肉',
+    }).parentElement
     expect(
-      within(detail).getByRole('button', { name: '胸大肌' }),
-    ).toBeInTheDocument()
-    expect(
-      within(detail).getByRole('button', { name: '三角肌前束' }),
-    ).toBeInTheDocument()
-    expect(
-      within(detail).getByRole('button', { name: '肱三头肌' }),
-    ).toBeInTheDocument()
-    expect(
-      within(detail).getByRole('button', { name: '前锯肌' }),
-    ).toBeInTheDocument()
+      within(targets!)
+        .getAllByRole('button')
+        .map((button) => button.textContent),
+    ).toEqual([
+      '胸大肌主动肌',
+      '三角肌前束协同肌',
+      '肱三头肌协同肌',
+      '前锯肌稳定肌',
+    ])
   })
 
   it('ignores a bone address and stays on the muscle explorer', () => {
