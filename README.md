@@ -36,6 +36,14 @@
 
 ![杠铃卧推详情：目标肌肉、动作步骤和演示](docs/screenshots/exercise-detail.jpg)
 
+## 移动端
+
+窄屏下保留完整人体图，详情收进底部抽屉，点开后再展开完整内容：
+
+<p align="center">
+  <img src="docs/screenshots/mobile.jpg" alt="健身指北移动端界面" width="320" />
+</p>
+
 ## 本地开发
 
 需要 Node.js 20+（推荐 22 LTS）。
